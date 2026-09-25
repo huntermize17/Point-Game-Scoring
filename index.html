@@ -112,7 +112,11 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .editor{border-top:1px solid var(--line);padding-top:10px}
 .editor label.sm{margin-top:6px}
 .slots{display:grid;gap:6px}
-.slot{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:6px}
+.slot{display:grid;grid-template-columns:28px 1fr 44px;align-items:center;gap:6px}
+.slot .rm{width:44px;height:44px;border-radius:8px;background:var(--btn);color:var(--btn-ink);font-size:1.3rem;font-weight:700}
+.slot .rm:disabled{opacity:.35;cursor:default}
+.addp{margin-top:10px;width:100%;padding:11px;border-radius:10px;border:2px dashed var(--line);color:var(--field);font-weight:700}
+.addp:disabled{opacity:.4;cursor:default}
 .slot span{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--field);text-align:center}
 
 /* Tables */
@@ -198,12 +202,13 @@ const DEFAULT_TEAMS = ["Alpha","Bravo","Charlie","Delta"];
 const KEY = "point-game-v2";
 const OLD_KEY = "point-game-v1";
 
-function emptyScores(nTeams){
-  return ROUNDS.map(()=>Array.from({length:nTeams},()=>Array.from({length:NP},()=>({b:0,p:0,s:0}))));
+const MAXP = 20;
+function emptyScores(teams){
+  return ROUNDS.map(()=>teams.map(tm=>tm.players.map(()=>({b:0,p:0,s:0}))));
 }
 function blank(teams){
   teams = teams || DEFAULT_TEAMS.map(n=>({name:n, players:Array(NP).fill("")}));
-  return {v:2, teams, round:0, scores:emptyScores(teams.length), notes:""};
+  return {v:2, teams, round:0, scores:emptyScores(teams), notes:""};
 }
 function load(){
   try{
@@ -293,7 +298,8 @@ function renderTeams(){
         <label class="sm" for="tn${t}">Team name</label>
         <input type="text" id="tn${t}" data-tname="${t}" maxlength="24" value="${esc(team.name)}">
         <label class="sm">Lineup</label>
-        <div class="slots">${team.players.map((p,i)=>`<div class="slot"><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"></div>`).join("")}</div>
+        <div class="slots">${team.players.map((p,i)=>`<div class="slot"><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"><button class="rm" data-act="rmp" data-idx="${i}" aria-label="Remove ${esc(pName(t,i))}" ${team.players.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
+        <button class="addp" data-act="addp" ${team.players.length>=MAXP?'disabled':''}>+ Add player</button>
       </div>`;
     } else {
       body = `<div class="lhead"><span></span><span>Player</span><span>Rd ${r+1}</span><span>Game</span><span></span></div>
@@ -372,6 +378,29 @@ document.getElementById("teams").addEventListener("click",e=>{
     if(editing.has(t)) editing.delete(t); else { editing.add(t); if(open.t===t) open={t:-1,i:-1}; }
     renderTeams();
     if(editing.has(t)){ const f=document.querySelector(`[data-team="${t}"] [data-player="0"]`); if(f) f.focus(); }
+    return;
+  }
+  if(act==="addp"){
+    if(state.teams[t].players.length>=MAXP) return;
+    snapshot();
+    state.teams[t].players.push("");
+    state.scores.forEach(rd=>rd[t].push({b:0,p:0,s:0}));
+    save(); render();
+    const n = state.teams[t].players.length-1;
+    const f = document.querySelector(`[data-team="${t}"] [data-player="${n}"]`); if(f) f.focus();
+    return;
+  }
+  if(act==="rmp"){
+    const i = +b.dataset.idx;
+    if(state.teams[t].players.length<=1) return;
+    const name = pName(t,i), g = pGame(t,i);
+    const touched = state.scores.some(rd=>{const c=rd[t][i]; return c.b||c.p||c.s;});
+    if(touched && !confirm(`Remove ${name}? Their ${g} point${Math.abs(g)===1?'':'s'} come off ${state.teams[t].name}'s total.`)) return;
+    snapshot();
+    state.teams[t].players.splice(i,1);
+    state.scores.forEach(rd=>rd[t].splice(i,1));
+    open = {t:-1,i:-1};
+    save(); render(); toast(`${name} removed`);
     return;
   }
   const holder = b.closest("[data-p]");
