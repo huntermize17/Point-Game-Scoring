@@ -111,7 +111,7 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .prow .chev{color:var(--muted);transition:transform .15s}
 .prow[aria-expanded="true"] .chev{transform:rotate(90deg)}
 @media (prefers-reduced-motion:reduce){.prow .chev{transition:none}}
-.qb{flex:1 1 250px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.qb{flex:1 1 210px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .q{height:50px;border-radius:9px;font-family:var(--display);font-weight:800;font-size:1.3rem;line-height:1;padding:0 2px}
 .q small{display:block;font-family:var(--ui);font-weight:600;font-size:.64rem;margin-top:2px;white-space:nowrap}
 .q.base{background:var(--field);color:#fff}
@@ -220,7 +220,7 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
       <li>+1 point for every base touched.</li>
       <li>−5 points for hitting into a double play.</li>
       <li>−5 points for a base running mistake.</li>
-      <li>Exit speed bonus: over 90 is +1, over 95 is +2, over 100 is +3.</li>
+      <li>Exit speed bonus: over 90 is +1, over 95 is +2.</li>
     </ul>
   </details>
 
@@ -337,7 +337,6 @@ function controls(t,i){
     <div class="velo">
       <button data-act="v1" aria-label="Exit speed over 90 for ${n}, plus 1">Over 90<small>+1</small></button>
       <button data-act="v2" aria-label="Exit speed over 95 for ${n}, plus 2">Over 95<small>+2</small></button>
-      <button data-act="v3" aria-label="Exit speed over 100 for ${n}, plus 3">Over 100<small>+3</small></button>
     </div>
   </div>`;
 }
@@ -373,7 +372,6 @@ function renderTeams(){
             <button class="q pen" data-act="p+" aria-label="DP or base running mistake for ${n}, minus 5">−5<small>DP/Mistake</small></button>
             <button class="q vel" data-act="v1" aria-label="Exit speed over 90 for ${n}, plus 1">+1<small>Over 90</small></button>
             <button class="q vel" data-act="v2" aria-label="Exit speed over 95 for ${n}, plus 2">+2<small>Over 95</small></button>
-            <button class="q vel" data-act="v3" aria-label="Exit speed over 100 for ${n}, plus 3">+3<small>Over 100</small></button>
           </div></div>
           ${isOpen?controls(t,i):''}</li>`;
       }).join("")}</ol>`;
