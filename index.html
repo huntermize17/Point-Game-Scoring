@@ -43,7 +43,7 @@
 :root[data-theme="sun"] .team,:root[data-theme="sun"] .rbtn,:root[data-theme="sun"] .tablewrap,
 :root[data-theme="sun"] details,:root[data-theme="sun"] .rtot{border-width:2px}
 :root[data-theme="sun"] .stepper button,:root[data-theme="sun"] .velo button,:root[data-theme="sun"] .ghost,
-:root[data-theme="sun"] .editbtn{border:2px solid #000}
+:root[data-theme="sun"] .editbtn,:root[data-theme="sun"] .q{border:2px solid #000}
 :root[data-theme="sun"] .gtot,:root[data-theme="sun"] .row .sub,:root[data-theme="sun"] th,
 :root[data-theme="sun"] .prow .pg,:root[data-theme="sun"] .lhead{font-weight:700}
 :root[data-theme="sun"] .prow .pn.unnamed{color:#333}
@@ -97,22 +97,30 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .neg{color:var(--bad)}
 
 /* Lineup */
-.lhead,.prow{display:grid;grid-template-columns:28px 1fr 52px 52px 18px;align-items:center;gap:6px}
-.lhead{font-size:.75rem;color:var(--muted);font-weight:600;padding:4px 8px}
-.lhead span:nth-child(3),.lhead span:nth-child(4){text-align:center}
 .lineup{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .lineup>li{border-bottom:1px solid var(--line)}
-.prow{width:100%;padding:10px 8px;text-align:left;min-height:50px}
+.lineup>li.isopen{background:var(--panel2)}
+.pline{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:6px 2px}
+.prow{flex:1 1 170px;min-width:0;display:grid;grid-template-columns:24px minmax(0,1fr) auto 12px;align-items:center;gap:6px;padding:6px 4px;min-height:46px;text-align:left;border-radius:8px}
 .prow .num{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--field)}
 .prow .pn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow .pn.unnamed{color:var(--muted);font-weight:500}
-.prow .pr,.prow .pg{text-align:center;font-variant-numeric:tabular-nums}
-.prow .pr{font-family:var(--display);font-weight:800;font-size:1.4rem}
-.prow .pg{color:var(--muted);font-weight:600}
+.prow .pts{text-align:right;line-height:1;font-variant-numeric:tabular-nums}
+.prow .pts b{display:block;font-family:var(--display);font-weight:800;font-size:1.5rem}
+.prow .pts small{font-size:.72rem;color:var(--muted);font-weight:600}
 .prow .chev{color:var(--muted);transition:transform .15s}
-.prow[aria-expanded="true"]{background:var(--panel2)}
 .prow[aria-expanded="true"] .chev{transform:rotate(90deg)}
 @media (prefers-reduced-motion:reduce){.prow .chev{transition:none}}
+.qb{flex:1 1 250px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.q{height:50px;border-radius:9px;font-family:var(--display);font-weight:800;font-size:1.3rem;line-height:1;padding:0 2px}
+.q small{display:block;font-family:var(--ui);font-weight:600;font-size:.64rem;margin-top:2px;white-space:nowrap}
+.q.base{background:var(--field);color:#fff}
+.q.pen{background:var(--pen);color:#fff}
+.q.vel{background:var(--bulb);color:var(--bulb-ink)}
+.q:active{transform:scale(.95)}
+.flash{animation:flash .5s ease-out}
+@keyframes flash{0%{background:color-mix(in srgb,var(--bulb) 45%,transparent)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}.q:active{transform:none}}
 .pctl{background:var(--panel2);padding:2px 10px 12px}
 .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .row:first-child{border-top:0}
@@ -353,13 +361,20 @@ function renderTeams(){
         <button class="addp" data-act="addp" ${team.players.length>=MAXP?'disabled':''}>+ Add player</button>
       </div>`;
     } else {
-      body = `<div class="lhead"><span></span><span>Player</span><span>Rd ${r+1}</span><span>Game</span><span></span></div>
-      <ol class="lineup">${team.players.map((_,i)=>{
+      body = `<ol class="lineup">${team.players.map((_,i)=>{
         const isOpen = open.t===t && open.i===i;
-        const pr = pRound(r,t,i), pg = pGame(t,i);
-        return `<li><button class="prow" data-act="open" data-p="${i}" aria-expanded="${isOpen}">
-          <span class="num">${i+1}</span><span class="pn${named(t,i)?'':' unnamed'}">${esc(pName(t,i))}</span>
-          <span class="pr${neg(pr)}">${pr}</span><span class="pg${neg(pg)}">${pg}</span><span class="chev" aria-hidden="true">›</span></button>
+        const pr = pRound(r,t,i), pg = pGame(t,i), n = esc(pName(t,i));
+        return `<li data-p="${i}" class="${isOpen?'isopen':''}"><div class="pline">
+          <button class="prow" data-act="open" aria-expanded="${isOpen}" aria-label="${n}: ${pr} this round, ${pg} game. Show corrections">
+            <span class="num">${i+1}</span><span class="pn${named(t,i)?'':' unnamed'}">${n}</span>
+            <span class="pts"><b class="${pr<0?'neg':''}">${pr}</b><small>${pg} game</small></span><span class="chev" aria-hidden="true">›</span></button>
+          <div class="qb">
+            <button class="q base" data-act="b+" aria-label="Add a base for ${n}">+1<small>Base</small></button>
+            <button class="q pen" data-act="p+" aria-label="DP or base running mistake for ${n}, minus 5">−5<small>DP/Mistake</small></button>
+            <button class="q vel" data-act="v1" aria-label="Exit speed over 90 for ${n}, plus 1">+1<small>Over 90</small></button>
+            <button class="q vel" data-act="v2" aria-label="Exit speed over 95 for ${n}, plus 2">+2<small>Over 95</small></button>
+            <button class="q vel" data-act="v3" aria-label="Exit speed over 100 for ${n}, plus 3">+3<small>Over 100</small></button>
+          </div></div>
           ${isOpen?controls(t,i):''}</li>`;
       }).join("")}</ol>`;
     }
@@ -478,6 +493,7 @@ document.getElementById("teams").addEventListener("click",e=>{
   }
   if(!msg){ history.pop(); return; }
   save(); render(); toast(msg);
+  const li = document.querySelector(`[data-team="${t}"] li[data-p="${i}"] .pline`); if(li) li.classList.add("flash");
 });
 
 document.getElementById("teams").addEventListener("input",e=>{
