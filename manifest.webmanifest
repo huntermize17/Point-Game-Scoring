@@ -1,0 +1,11 @@
+{
+  "name": "Point Game Scoring",
+  "short_name": "Point Game",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f2ef",
+  "theme_color": "#b3122a",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
