@@ -35,6 +35,20 @@
     --line:#4a1d23; --field:#c8102e; --bulb:#c5b358; --bulb-ink:#231c00; --bad:#ff8a93; --good:#d8c878;
     --btn:#3b171c; --btn-ink:#f5efe6; --pen:#5b4b4e;
 }
+:root[data-theme="sun"]{
+  --bg:#ffffff; --panel:#ffffff; --panel2:#f0f0f0; --ink:#000000; --muted:#1f1f1f;
+  --line:#000000; --field:#a3001b; --bulb:#d4b640; --bulb-ink:#000000; --bad:#a3001b; --good:#a3001b;
+  --btn:#e6e6e6; --btn-ink:#000000; --pen:#000000;
+}
+:root[data-theme="sun"] .team,:root[data-theme="sun"] .rbtn,:root[data-theme="sun"] .tablewrap,
+:root[data-theme="sun"] details,:root[data-theme="sun"] .rtot{border-width:2px}
+:root[data-theme="sun"] .stepper button,:root[data-theme="sun"] .velo button,:root[data-theme="sun"] .ghost,
+:root[data-theme="sun"] .editbtn{border:2px solid #000}
+:root[data-theme="sun"] .gtot,:root[data-theme="sun"] .row .sub,:root[data-theme="sun"] th,
+:root[data-theme="sun"] .prow .pg,:root[data-theme="sun"] .lhead{font-weight:700}
+:root[data-theme="sun"] .prow .pn.unnamed{color:#333}
+:root[data-theme="sun"] .situation{background:#000}
+:root[data-theme="sun"] .rbtn[aria-pressed="true"]{background:#000;border-color:#000}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
@@ -144,7 +158,7 @@ details{margin-top:14px;background:var(--panel);border:1px solid var(--line);bor
 summary{cursor:pointer;font-weight:700;padding:10px 0}
 details ul{margin:0 0 12px;padding-left:1.2em}
 details li{margin:4px 0}
-input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+input[type=text],textarea{box-sizing:border-box;width:100%;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
 textarea{min-height:80px;resize:vertical;margin-bottom:12px}
 .danger{padding:10px 14px;border-radius:8px;background:transparent;border:2px solid var(--bad);color:var(--bad);font-weight:700;margin-bottom:14px}
 html.nozoom, html.nozoom *{touch-action:manipulation}
@@ -158,6 +172,13 @@ html.nozoom, html.nozoom *{touch-action:manipulation}
 .switch input:checked + .track::after{transform:translateX(20px)}
 .switch input:focus-visible + .track{outline:3px solid var(--bulb);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.switch .track,.switch .track::after{transition:none}}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--btn);border-radius:10px;padding:4px;margin:6px 0 14px}
+.seg label{position:relative;text-align:center;padding:9px 2px;border-radius:7px;font-weight:600;font-size:.9rem;cursor:pointer}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg label:has(input:checked){background:var(--field);color:#fff}
+.seg label:has(input:focus-visible){outline:3px solid var(--bulb);outline-offset:1px}
+.appearance{border-bottom:1px solid var(--line);margin-bottom:12px;padding-top:4px}
+.appearance .sub{display:block;font-size:.8rem;color:var(--muted);margin-top:-8px;margin-bottom:12px}
 label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
 
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;transition:opacity .2s,transform .2s;pointer-events:none;max-width:90vw;text-align:center}
@@ -197,6 +218,16 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
 
   <details>
     <summary>Settings</summary>
+    <div class="appearance">
+      <b>Appearance</b>
+      <div class="seg" role="radiogroup" aria-label="Appearance" id="themeSeg">
+        <label><input type="radio" name="theme" value="auto">Auto</label>
+        <label><input type="radio" name="theme" value="light">Light</label>
+        <label><input type="radio" name="theme" value="dark">Dark</label>
+        <label><input type="radio" name="theme" value="sun">Sunlight</label>
+      </div>
+      <span class="sub">Sunlight uses black, white and bold red for the most contrast in direct sun. Auto follows your phone.</span>
+    </div>
     <div class="setting">
       <label for="nozoom"><b>Block double-tap zoom</b><span class="sub">Quick taps on buttons won't zoom the screen. Pinch to zoom still works.</span></label>
       <span class="switch"><input type="checkbox" id="nozoom" role="switch"><span class="track"></span></span>
@@ -470,6 +501,19 @@ document.getElementById("teams").addEventListener("keydown",e=>{
 document.getElementById("undo").addEventListener("click",()=>{
   if(!history.length) return;
   state = JSON.parse(history.pop()); save(); render(); toast("Last change undone");
+});
+const THEME_KEY = "point-game-theme";
+function applyTheme(v){
+  if(v==="auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", v);
+  const r = document.querySelector(`#themeSeg input[value="${v}"]`); if(r) r.checked = true;
+}
+let themePref = "auto";
+try{ themePref = localStorage.getItem(THEME_KEY) || "auto"; }catch(e){}
+applyTheme(themePref);
+document.getElementById("themeSeg").addEventListener("change",e=>{
+  applyTheme(e.target.value);
+  try{ localStorage.setItem(THEME_KEY, e.target.value); }catch(err){}
 });
 const ZOOM_KEY = "point-game-nozoom";
 function applyZoom(on){ document.documentElement.classList.toggle("nozoom", on); document.getElementById("nozoom").checked = on; }
