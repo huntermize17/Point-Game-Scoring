@@ -64,18 +64,39 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .base.on{fill:var(--bulb);stroke:var(--bulb)}
 
 /* Team cards */
-.teams{display:grid;grid-template-columns:1fr;gap:12px}
-@media (min-width:720px){.teams{grid-template-columns:1fr 1fr}}
+.teams{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
+@media (min-width:760px){.teams{grid-template-columns:1fr 1fr}}
 .team{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-.team-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
-.tname{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1}
+.team-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.tname{font-family:var(--display);font-weight:800;font-size:1.8rem;line-height:1}
 .gtot{font-size:.85rem;color:var(--muted);margin-top:4px}
 .gtot .lead{color:var(--good);font-weight:700}
+.editbtn{margin-top:8px;padding:6px 12px;border-radius:8px;background:var(--btn);color:var(--btn-ink);font-weight:600;font-size:.88rem}
 .rtot{min-width:84px;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:4px 10px 6px}
 .rtot b{display:block;font-family:var(--display);font-weight:900;font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
 .rtot span{font-size:.72rem;color:var(--muted)}
-.rtot b.neg{color:var(--bad)}
+.neg{color:var(--bad)}
+
+/* Lineup */
+.lhead,.prow{display:grid;grid-template-columns:28px 1fr 52px 52px 18px;align-items:center;gap:6px}
+.lhead{font-size:.75rem;color:var(--muted);font-weight:600;padding:4px 8px}
+.lhead span:nth-child(3),.lhead span:nth-child(4){text-align:center}
+.lineup{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.lineup>li{border-bottom:1px solid var(--line)}
+.prow{width:100%;padding:10px 8px;text-align:left;min-height:50px}
+.prow .num{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--field)}
+.prow .pn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .pn.unnamed{color:var(--muted);font-weight:500}
+.prow .pr,.prow .pg{text-align:center;font-variant-numeric:tabular-nums}
+.prow .pr{font-family:var(--display);font-weight:800;font-size:1.4rem}
+.prow .pg{color:var(--muted);font-weight:600}
+.prow .chev{color:var(--muted);transition:transform .15s}
+.prow[aria-expanded="true"]{background:var(--panel2)}
+.prow[aria-expanded="true"] .chev{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){.prow .chev{transition:none}}
+.pctl{background:var(--panel2);padding:2px 10px 12px}
 .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
 .row .lbl{font-weight:600}
 .row .sub{display:block;font-size:.78rem;color:var(--muted);font-weight:500}
 .stepper{display:flex;align-items:center;gap:4px}
@@ -83,40 +104,45 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .stepper button.plus{background:var(--field);color:#fff}
 .stepper button.minus5{background:var(--pen);color:#fff}
 .stepper output{min-width:40px;text-align:center;font-family:var(--display);font-weight:800;font-size:1.7rem;font-variant-numeric:tabular-nums}
-.velo{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.velo{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .velo button{flex:1 1 0;min-width:74px;padding:8px 4px;border-radius:10px;background:var(--bulb);color:var(--bulb-ink);font-weight:700;line-height:1.1}
 .velo button small{display:block;font-weight:600;font-size:.75rem;opacity:.8}
 
-/* Standings */
+/* Lineup editor */
+.editor{border-top:1px solid var(--line);padding-top:10px}
+.editor label.sm{margin-top:6px}
+.slots{display:grid;gap:6px}
+.slot{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:6px}
+.slot span{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--field);text-align:center}
+
+/* Tables */
 h2{font-family:var(--display);font-weight:800;font-size:1.9rem;margin:28px 0 8px}
 .tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px}
-table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;min-width:560px;font-variant-numeric:tabular-nums}
 th,td{padding:10px 10px;text-align:center;border-bottom:1px solid var(--line)}
 th{font-size:.8rem;color:var(--muted);font-weight:600}
 td:first-child,th:first-child{text-align:left}
+td.tm,th.tm{text-align:left;color:var(--muted)}
 tr:last-child td{border-bottom:0}
 td.cur,th.cur{background:var(--panel2)}
 td.tot{font-family:var(--display);font-weight:900;font-size:1.5rem}
 tr.leader td.tot{color:var(--good)}
-.rank{display:inline-block;width:1.4em;color:var(--muted);font-weight:600}
+.rank{display:inline-block;width:1.6em;color:var(--muted);font-weight:600}
+.empty{padding:16px;color:var(--muted);margin:0}
 
 /* Rules + setup */
 details{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px 16px}
 summary{cursor:pointer;font-weight:700;padding:10px 0}
 details ul{margin:0 0 12px;padding-left:1.2em}
 details li{margin:4px 0}
-.names{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
 textarea{min-height:80px;resize:vertical;margin-bottom:12px}
 .danger{padding:10px 14px;border-radius:8px;background:transparent;border:2px solid var(--bad);color:var(--bad);font-weight:700;margin-bottom:14px}
 label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
 
-.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;transition:opacity .2s,transform .2s;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;transition:opacity .2s,transform .2s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
-.bump{animation:bump .25s ease-out}
-@keyframes bump{0%{transform:scale(1.18)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.bump{animation:none}}
 </style>
 </head>
 <body>
@@ -135,6 +161,9 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
   <h2>Standings</h2>
   <div class="tablewrap"><table id="standings"></table></div>
 
+  <h2>Player leaders</h2>
+  <div class="tablewrap" id="playersWrap"></div>
+
   <details>
     <summary>Rules</summary>
     <ul>
@@ -147,9 +176,7 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
   </details>
 
   <details>
-    <summary>Teams, notes and reset</summary>
-    <label class="sm">Team names</label>
-    <div class="names" id="names"></div>
+    <summary>Notes and reset</summary>
     <label class="sm" for="notes">Notes</label>
     <textarea id="notes" placeholder="Anything worth remembering from today"></textarea>
     <button class="danger" id="reset">Start a new game</button>
@@ -166,33 +193,49 @@ const ROUNDS = [
   {desc:"Runner at 3B", bases:[3], outs:1},
   {desc:"Bases loaded", bases:[1,2,3], outs:1},
 ];
-const KEY = "point-game-v1";
+const NP = 9;
+const DEFAULT_TEAMS = ["Alpha","Bravo","Charlie","Delta"];
+const KEY = "point-game-v2";
+const OLD_KEY = "point-game-v1";
 
-function blank(){
-  return {
-    teams:["Alpha","Bravo","Charlie","Delta"],
-    round:0,
-    scores:ROUNDS.map(()=>[0,1,2,3].map(()=>({b:0,p:0,s:0}))),
-    notes:""
-  };
+function emptyScores(nTeams){
+  return ROUNDS.map(()=>Array.from({length:nTeams},()=>Array.from({length:NP},()=>({b:0,p:0,s:0}))));
 }
-let state = load();
-let history = [];
-
+function blank(teams){
+  teams = teams || DEFAULT_TEAMS.map(n=>({name:n, players:Array(NP).fill("")}));
+  return {v:2, teams, round:0, scores:emptyScores(teams.length), notes:""};
+}
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){ const s = JSON.parse(raw); if(s && s.scores && s.teams) return s; }
+    if(raw){ const s = JSON.parse(raw); if(s && s.v===2 && s.scores && s.teams) return s; }
+    const old = localStorage.getItem(OLD_KEY);
+    if(old){
+      const o = JSON.parse(old);
+      const st = blank((o.teams||DEFAULT_TEAMS).map(n=>({name:String(n), players:Array(NP).fill("")})));
+      st.notes = o.notes || "";
+      return st;
+    }
   }catch(e){}
   return blank();
 }
+let state = load();
+let history = [];
+let open = {t:-1, i:-1};
+const editing = new Set();
+
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
-function snapshot(){ history.push(JSON.stringify(state)); if(history.length>100) history.shift(); }
+function snapshot(){ history.push(JSON.stringify(state)); if(history.length>150) history.shift(); }
 
 const pts = c => c.b - 5*c.p + c.s;
-const roundTotal = (r,t) => pts(state.scores[r][t]);
-const gameTotal = t => state.scores.reduce((a,_,r)=>a+roundTotal(r,t),0);
+const pRound = (r,t,i) => pts(state.scores[r][t][i]);
+const pGame = (t,i) => ROUNDS.reduce((a,_,r)=>a+pRound(r,t,i),0);
+const tRound = (r,t) => state.scores[r][t].reduce((a,c)=>a+pts(c),0);
+const tGame = t => ROUNDS.reduce((a,_,r)=>a+tRound(r,t),0);
+const pName = (t,i) => (state.teams[t].players[i]||"").trim() || `Player ${i+1}`;
+const named = (t,i) => !!(state.teams[t].players[i]||"").trim();
 const esc = s => String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const neg = v => v<0 ? ' neg' : '';
 
 function diamond(on){
   const has = n => on.includes(n) ? " on" : "";
@@ -217,57 +260,97 @@ function renderSituation(){
     <div class="desc">${r.desc}</div>
     <div class="outs"><span class="dot${r.outs>=1?' on':''}"></span><span class="dot${r.outs>=2?' on':''}"></span>&nbsp;${r.outs} out${r.outs>1?'s':''}</div></div>`;
 }
+
+function controls(t,i){
+  const c = state.scores[state.round][t][i], n = esc(pName(t,i));
+  return `<div class="pctl" data-p="${i}">
+    <div class="row"><div class="lbl">Bases touched<span class="sub">+1 each</span></div>
+      <div class="stepper"><button data-act="b-" aria-label="Remove a base for ${n}">−</button><output>${c.b}</output><button class="plus" data-act="b+" aria-label="Add a base for ${n}">+</button></div></div>
+    <div class="row"><div class="lbl">DP / Base Running Mistake<span class="sub">−5 each</span></div>
+      <div class="stepper"><button data-act="p-" aria-label="Remove a penalty for ${n}">−</button><output>${c.p}</output><button class="minus5" data-act="p+" aria-label="Add a penalty for ${n}">+</button></div></div>
+    <div class="row"><div class="lbl">Speed bonus<span class="sub">Points from exit speed</span></div>
+      <div class="stepper"><button data-act="s-" aria-label="Remove a bonus point for ${n}">−</button><output>${c.s}</output><button class="plus" data-act="s+" aria-label="Add a bonus point for ${n}">+</button></div></div>
+    <div class="velo">
+      <button data-act="v1" aria-label="Exit speed over 90 for ${n}, plus 1">Over 90<small>+1</small></button>
+      <button data-act="v2" aria-label="Exit speed over 95 for ${n}, plus 2">Over 95<small>+2</small></button>
+      <button data-act="v3" aria-label="Exit speed over 100 for ${n}, plus 3">Over 100<small>+3</small></button>
+    </div>
+  </div>`;
+}
+
 function renderTeams(){
   const r = state.round;
-  const totals = state.teams.map((_,t)=>gameTotal(t));
+  const totals = state.teams.map((_,t)=>tGame(t));
   const max = Math.max(...totals);
   const anyScore = totals.some(v=>v!==0);
-  document.getElementById("teams").innerHTML = state.teams.map((name,t)=>{
-    const c = state.scores[r][t], rt = pts(c);
+  document.getElementById("teams").innerHTML = state.teams.map((team,t)=>{
+    const rt = tRound(r,t);
     const lead = anyScore && totals[t]===max;
+    const isEdit = editing.has(t);
+    let body;
+    if(isEdit){
+      body = `<div class="editor">
+        <label class="sm" for="tn${t}">Team name</label>
+        <input type="text" id="tn${t}" data-tname="${t}" maxlength="24" value="${esc(team.name)}">
+        <label class="sm">Lineup</label>
+        <div class="slots">${team.players.map((p,i)=>`<div class="slot"><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"></div>`).join("")}</div>
+      </div>`;
+    } else {
+      body = `<div class="lhead"><span></span><span>Player</span><span>Rd ${r+1}</span><span>Game</span><span></span></div>
+      <ol class="lineup">${team.players.map((_,i)=>{
+        const isOpen = open.t===t && open.i===i;
+        const pr = pRound(r,t,i), pg = pGame(t,i);
+        return `<li><button class="prow" data-act="open" data-p="${i}" aria-expanded="${isOpen}">
+          <span class="num">${i+1}</span><span class="pn${named(t,i)?'':' unnamed'}">${esc(pName(t,i))}</span>
+          <span class="pr${neg(pr)}">${pr}</span><span class="pg${neg(pg)}">${pg}</span><span class="chev" aria-hidden="true">›</span></button>
+          ${isOpen?controls(t,i):''}</li>`;
+      }).join("")}</ol>`;
+    }
     return `<article class="team" data-team="${t}">
       <div class="team-top">
-        <div><div class="tname">${esc(name)}</div>
-          <div class="gtot">Game total ${totals[t]}${lead?' <span class="lead">· leading</span>':''}</div></div>
-        <div class="rtot"><b class="${rt<0?'neg':''}" id="rt${t}">${rt}</b><span>Round ${r+1}</span></div>
-      </div>
-      <div class="row"><div class="lbl">Bases touched<span class="sub">+1 each</span></div>
-        <div class="stepper"><button data-act="b-" aria-label="Remove a base for ${esc(name)}">−</button><output>${c.b}</output><button class="plus" data-act="b+" aria-label="Add a base for ${esc(name)}">+</button></div></div>
-      <div class="row"><div class="lbl">DP / Base Running Mistake<span class="sub">−5 each</span></div>
-        <div class="stepper"><button data-act="p-" aria-label="Remove a penalty for ${esc(name)}">−</button><output>${c.p}</output><button class="minus5" data-act="p+" aria-label="Add a penalty for ${esc(name)}">+</button></div></div>
-      <div class="row"><div class="lbl">Speed bonus<span class="sub">Points from exit speed</span></div>
-        <div class="stepper"><button data-act="s-" aria-label="Remove a bonus point for ${esc(name)}">−</button><output>${c.s}</output><button class="plus" data-act="s+" aria-label="Add a bonus point for ${esc(name)}">+</button></div></div>
-      <div class="velo">
-        <button data-act="v1" aria-label="Exit speed over 90, plus 1">Over 90<small>+1</small></button>
-        <button data-act="v2" aria-label="Exit speed over 95, plus 2">Over 95<small>+2</small></button>
-        <button data-act="v3" aria-label="Exit speed over 100, plus 3">Over 100<small>+3</small></button>
-      </div>
-    </article>`;
+        <div><div class="tname">${esc(team.name)}</div>
+          <div class="gtot">Game total ${totals[t]}${lead?' <span class="lead">· leading</span>':''}</div>
+          <button class="editbtn" data-act="edit">${isEdit?'Done':'Edit lineup'}</button></div>
+        <div class="rtot"><b class="${rt<0?'neg':''}">${rt}</b><span>Round ${r+1}</span></div>
+      </div>${body}</article>`;
   }).join("");
 }
+
 function renderStandings(){
-  const order = state.teams.map((_,t)=>t).sort((a,b)=>gameTotal(b)-gameTotal(a));
-  const max = gameTotal(order[0]);
-  const anyScore = state.teams.some((_,t)=>gameTotal(t)!==0);
+  const order = state.teams.map((_,t)=>t).sort((a,b)=>tGame(b)-tGame(a));
+  const max = tGame(order[0]);
+  const anyScore = state.teams.some((_,t)=>tGame(t)!==0);
   let h = `<thead><tr><th>Team</th>${ROUNDS.map((_,i)=>`<th class="${i===state.round?'cur':''}">R${i+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
-  order.forEach((t,i)=>{
-    const lead = anyScore && gameTotal(t)===max;
-    h += `<tr class="${lead?'leader':''}"><td><span class="rank">${i+1}</span>${esc(state.teams[t])}</td>${ROUNDS.map((_,r)=>`<td class="${r===state.round?'cur':''}">${roundTotal(r,t)}</td>`).join("")}<td class="tot">${gameTotal(t)}</td></tr>`;
+  order.forEach((t,k)=>{
+    const lead = anyScore && tGame(t)===max;
+    h += `<tr class="${lead?'leader':''}"><td><span class="rank">${k+1}</span>${esc(state.teams[t].name)}</td>${ROUNDS.map((_,r)=>`<td class="${r===state.round?'cur':''}">${tRound(r,t)}</td>`).join("")}<td class="tot">${tGame(t)}</td></tr>`;
   });
   document.getElementById("standings").innerHTML = h + "</tbody>";
 }
+
+function renderPlayers(){
+  const list = [];
+  state.teams.forEach((team,t)=>team.players.forEach((_,i)=>{
+    const touched = state.scores.some(rd=>{const c=rd[t][i]; return c.b||c.p||c.s;});
+    if(named(t,i) || touched) list.push({t,i,g:pGame(t,i)});
+  }));
+  const wrap = document.getElementById("playersWrap");
+  if(!list.length){ wrap.innerHTML = `<p class="empty">Enter lineups or start scoring and every player's totals will show here.</p>`; return; }
+  list.sort((a,b)=>b.g-a.g);
+  const max = list[0].g;
+  let h = `<table><thead><tr><th>Player</th><th class="tm">Team</th>${ROUNDS.map((_,i)=>`<th class="${i===state.round?'cur':''}">R${i+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+  list.forEach((p,k)=>{
+    h += `<tr class="${p.g===max&&max!==0?'leader':''}"><td><span class="rank">${k+1}</span>${esc(pName(p.t,p.i))}</td><td class="tm">${esc(state.teams[p.t].name)}</td>${ROUNDS.map((_,r)=>`<td class="${r===state.round?'cur':''}">${pRound(r,p.t,p.i)}</td>`).join("")}<td class="tot">${p.g}</td></tr>`;
+  });
+  wrap.innerHTML = h + "</tbody></table>";
+}
+
 function renderSetup(){
-  const box = document.getElementById("names");
-  if(!box.dataset.built){
-    box.innerHTML = state.teams.map((n,t)=>`<input type="text" data-name="${t}" aria-label="Team ${t+1} name" maxlength="24">`).join("");
-    box.dataset.built = "1";
-  }
-  box.querySelectorAll("input").forEach(inp=>{ if(document.activeElement!==inp) inp.value = state.teams[+inp.dataset.name]; });
   const notes = document.getElementById("notes");
   if(document.activeElement!==notes) notes.value = state.notes || "";
 }
 function renderUndo(){ document.getElementById("undo").setAttribute("aria-disabled", history.length? "false":"true"); }
-function render(){ renderRounds(); renderSituation(); renderTeams(); renderStandings(); renderSetup(); renderUndo(); }
+function render(){ renderRounds(); renderSituation(); renderTeams(); renderStandings(); renderPlayers(); renderSetup(); renderUndo(); }
 
 let toastTimer;
 function toast(msg){
@@ -284,9 +367,22 @@ document.getElementById("rounds").addEventListener("click",e=>{
 document.getElementById("teams").addEventListener("click",e=>{
   const b = e.target.closest("[data-act]"); if(!b) return;
   const t = +b.closest("[data-team]").dataset.team;
-  const c = state.scores[state.round][t];
   const act = b.dataset.act;
-  const name = state.teams[t];
+  if(act==="edit"){
+    if(editing.has(t)) editing.delete(t); else { editing.add(t); if(open.t===t) open={t:-1,i:-1}; }
+    renderTeams();
+    if(editing.has(t)){ const f=document.querySelector(`[data-team="${t}"] [data-player="0"]`); if(f) f.focus(); }
+    return;
+  }
+  const holder = b.closest("[data-p]");
+  if(!holder) return;
+  const i = +holder.dataset.p;
+  if(act==="open"){
+    open = (open.t===t && open.i===i) ? {t:-1,i:-1} : {t,i};
+    renderTeams(); return;
+  }
+  const c = state.scores[state.round][t][i];
+  const name = pName(t,i);
   snapshot();
   let msg = "";
   switch(act){
@@ -302,27 +398,39 @@ document.getElementById("teams").addEventListener("click",e=>{
   }
   if(!msg){ history.pop(); return; }
   save(); render(); toast(msg);
-  const rt = document.getElementById("rt"+t); if(rt){ rt.classList.add("bump"); }
+});
+
+document.getElementById("teams").addEventListener("input",e=>{
+  const card = e.target.closest("[data-team]"); if(!card) return;
+  const t = +card.dataset.team;
+  if(e.target.dataset.tname!==undefined){
+    state.teams[t].name = e.target.value.trim() || DEFAULT_TEAMS[t] || `Team ${t+1}`;
+    card.querySelector(".tname").textContent = state.teams[t].name;
+  } else if(e.target.dataset.player!==undefined){
+    state.teams[t].players[+e.target.dataset.player] = e.target.value;
+  } else return;
+  save(); renderStandings(); renderPlayers();
+});
+document.getElementById("teams").addEventListener("keydown",e=>{
+  if(e.key!=="Enter" || e.target.dataset.player===undefined) return;
+  e.preventDefault();
+  const next = e.target.closest(".team").querySelector(`[data-player="${+e.target.dataset.player+1}"]`);
+  if(next) next.focus(); else e.target.blur();
 });
 
 document.getElementById("undo").addEventListener("click",()=>{
   if(!history.length) return;
   state = JSON.parse(history.pop()); save(); render(); toast("Last change undone");
 });
-
-document.getElementById("names").addEventListener("input",e=>{
-  const i = e.target.dataset.name; if(i===undefined) return;
-  state.teams[+i] = e.target.value.trim() || ["Alpha","Bravo","Charlie","Delta"][+i];
-  save(); renderTeams(); renderStandings();
-});
 document.getElementById("notes").addEventListener("input",e=>{ state.notes = e.target.value; save(); });
 
 document.getElementById("reset").addEventListener("click",()=>{
-  if(!confirm("Clear every score and start a new game? Team names stay.")) return;
+  if(!confirm("Clear every score and start a new game? Team names and lineups stay.")) return;
   snapshot();
-  const names = state.teams.slice();
-  state = blank(); state.teams = names;
-  save(); render(); toast("New game started — Undo brings it back");
+  const teams = state.teams, notes = state.notes;
+  state = blank(teams); state.notes = notes;
+  open = {t:-1,i:-1};
+  save(); render(); toast("New game started. Undo brings it back.");
 });
 
 render();
