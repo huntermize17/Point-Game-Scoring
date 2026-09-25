@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#eef1ea; --panel:#ffffff; --panel2:#f5f7f2; --ink:#123024; --muted:#5b7264;
-  --line:#d3dccf; --field:#1f5c42; --bulb:#d99b00; --bulb-ink:#2b1d00; --bad:#b83a26; --good:#1f6b4a;
-  --btn:#e4ebe1; --btn-ink:#123024;
+  --bg:#f4f2ef; --panel:#ffffff; --panel2:#f8f5f1; --ink:#2a1215; --muted:#76605d;
+  --line:#e3d8d3; --field:#b3122a; --bulb:#c5b358; --bulb-ink:#2a2200; --bad:#8f0f22; --good:#b3122a;
+  --btn:#efe8e3; --btn-ink:#2a1215; --pen:#3d3033;
   --display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",Impact,sans-serif;
   --ui:"Barlow","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   box-sizing:border-box;
@@ -20,15 +20,15 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0c231a; --panel:#143426; --panel2:#0f2b1f; --ink:#f1eee2; --muted:#9db6a6;
-    --line:#24503b; --field:#2b7a57; --bulb:#f4c531; --bulb-ink:#231800; --bad:#ef6a50; --good:#6fd39f;
-    --btn:#1d4533; --btn-ink:#f1eee2;
+    --bg:#1b0a0d; --panel:#2a1115; --panel2:#220c10; --ink:#f5efe6; --muted:#c7aca7;
+    --line:#4a1d23; --field:#c8102e; --bulb:#c5b358; --bulb-ink:#231c00; --bad:#ff8a93; --good:#d8c878;
+    --btn:#3b171c; --btn-ink:#f5efe6; --pen:#5b4b4e;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0c231a; --panel:#143426; --panel2:#0f2b1f; --ink:#f1eee2; --muted:#9db6a6;
-  --line:#24503b; --field:#2b7a57; --bulb:#f4c531; --bulb-ink:#231800; --bad:#ef6a50; --good:#6fd39f;
-  --btn:#1d4533; --btn-ink:#f1eee2;
+  --bg:#1b0a0d; --panel:#2a1115; --panel2:#220c10; --ink:#f5efe6; --muted:#c7aca7;
+    --line:#4a1d23; --field:#c8102e; --bulb:#c5b358; --bulb-ink:#231c00; --bad:#ff8a93; --good:#d8c878;
+    --btn:#3b171c; --btn-ink:#f5efe6; --pen:#5b4b4e;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -50,7 +50,7 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .rbtn b{display:block;font-family:var(--display);font-weight:800;font-size:1.6rem;line-height:1}
 .rbtn span{font-size:.72rem;color:var(--muted)}
 .rbtn[aria-pressed="true"]{background:var(--field);border-color:var(--field);color:#fff}
-.rbtn[aria-pressed="true"] span{color:#d6efe2}
+.rbtn[aria-pressed="true"] span{color:#f7d9dd}
 
 /* Situation board */
 .situation{display:flex;align-items:center;gap:18px;background:var(--field);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:16px}
@@ -81,7 +81,7 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .stepper{display:flex;align-items:center;gap:4px}
 .stepper button{width:46px;height:46px;border-radius:10px;background:var(--btn);color:var(--btn-ink);font-size:1.5rem;font-weight:700;line-height:1}
 .stepper button.plus{background:var(--field);color:#fff}
-.stepper button.minus5{background:var(--bad);color:#fff}
+.stepper button.minus5{background:var(--pen);color:#fff}
 .stepper output{min-width:40px;text-align:center;font-family:var(--display);font-weight:800;font-size:1.7rem;font-variant-numeric:tabular-nums}
 .velo{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .velo button{flex:1 1 0;min-width:74px;padding:8px 4px;border-radius:10px;background:var(--bulb);color:var(--bulb-ink);font-weight:700;line-height:1.1}
