@@ -4,11 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Point Game Scoring</title>
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="icon" type="image/png" href="icon.png">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-title" content="Point Game">
-<meta name="theme-color" content="#b3122a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -192,17 +187,126 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;transition:opacity .2s,transform .2s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* Mode switch */
+.seg.modes{grid-template-columns:1fr 1fr;margin:0 0 14px}
+.seg.modes label{font-family:var(--display);font-weight:800;font-size:1.15rem;padding:8px 2px}
+html[data-mode="bucket"] .point-only{display:none!important}
+html:not([data-mode="bucket"]) .bucket-only{display:none!important}
+
+/* Bucket Ball */
+.bscore{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.bteam{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.bteam.up{border-color:var(--field)}
+.bteam .nm{font-family:var(--display);font-weight:800;font-size:1.5rem;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bteam .tt{font-family:var(--display);font-weight:900;font-size:3.2rem;line-height:1;margin-top:2px;font-variant-numeric:tabular-nums}
+.bteam .st{font-size:.82rem;color:var(--muted);font-weight:600}
+.bteam.up .st{color:var(--good)}
+.bfield{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;background:var(--field);color:#fff;border-radius:14px;padding:12px 16px 14px;margin-bottom:10px}
+.bdia{position:relative;width:180px;height:180px;flex:0 0 auto}
+.bdia .path{position:absolute;left:50%;top:50%;width:92px;height:92px;border:2px solid rgba(255,255,255,.55);transform:translate(-50%,-50%) rotate(45deg)}
+.bdia .plate{position:absolute;left:50%;top:calc(50% + 65px);width:18px;height:18px;background:#fff;transform:translate(-50%,-50%);clip-path:polygon(0 0,100% 0,100% 55%,50% 100%,0 55%)}
+.bb{position:absolute;width:48px;height:48px;transform:translate(-50%,-50%) rotate(45deg);border-radius:6px;background:rgba(255,255,255,.16);border:2px solid #fff;color:#fff}
+.bb span{display:block;transform:rotate(-45deg);font-family:var(--display);font-weight:800;font-size:1.05rem}
+.bb.b2{left:50%;top:calc(50% - 65px)}
+.bb.b1{left:calc(50% + 65px);top:50%}
+.bb.b3{left:calc(50% - 65px);top:50%}
+.bb.on{background:var(--bulb);border-color:var(--bulb);color:var(--bulb-ink);box-shadow:0 0 0 4px rgba(197,179,88,.3)}
+.bb.sel{outline:3px solid #fff;outline-offset:4px}
+.bb:disabled{cursor:default}
+.binfo{flex:1 1 130px;min-width:0}
+.binfo .balls{margin-top:8px;font-weight:600}
+.binfo .balls b{font-family:var(--display);font-weight:900;font-size:2.4rem;line-height:1;margin-right:4px;font-variant-numeric:tabular-nums}
+.bdots{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:5px}
+.bdots i{width:13px;height:13px;border-radius:50%;background:var(--bulb)}
+.bdots i.used{background:transparent;border:2px solid rgba(255,255,255,.4)}
+.rpanel{background:var(--panel);border:2px solid var(--bulb);border-radius:14px;padding:10px 12px 12px;margin-bottom:10px}
+.rpanel .rh{font-weight:700;margin-bottom:8px}
+.rbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:6px}
+.rbtns button{height:52px;border-radius:10px;font-weight:700;line-height:1.1;background:var(--btn);color:var(--btn-ink)}
+.rbtns button small{display:block;font-size:.75rem;font-weight:600;opacity:.85}
+.rbtns .adv{background:var(--field);color:#fff}
+.rbtns .sc{background:var(--bulb);color:var(--bulb-ink)}
+.rbtns .ro{background:var(--pen);color:#fff}
+.bacts{display:grid;gap:6px;margin-bottom:10px}
+.brow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.brow.hits{grid-template-columns:repeat(4,1fr)}
+.ba{height:58px;border-radius:10px;font-family:var(--display);font-weight:800;font-size:1.4rem;line-height:1;padding:0 2px}
+.ba small{display:block;font-family:var(--ui);font-weight:600;font-size:.68rem;margin-top:3px;white-space:nowrap}
+.ba.swing{background:var(--btn);color:var(--btn-ink)}
+.ba.out{background:var(--pen);color:#fff}
+.ba.hit{background:var(--field);color:#fff}
+.ba.hr{background:var(--bulb);color:var(--bulb-ink)}
+.ba:disabled{opacity:.35;cursor:default}
+.ba:not(:disabled):active,.rbtns button:active{transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){.ba:not(:disabled):active,.rbtns button:active{transform:none}}
+.bswitch{width:100%;padding:13px;border-radius:12px;font-weight:700;background:var(--btn);color:var(--btn-ink)}
+.bswitch.go{background:var(--bulb);color:var(--bulb-ink);font-family:var(--display);font-weight:900;font-size:1.5rem;padding:14px}
+.lines table{min-width:0}
+.bnames{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.seg.bcount{grid-template-columns:repeat(3,1fr);margin:6px 0 12px}
+.bscore.n3{grid-template-columns:repeat(3,1fr)}
+.bscore.n3 .tt,.bscore.n4 .tt{font-size:2.5rem}
+.bscore.n3 .nm,.bscore.n4 .nm{font-size:1.25rem}
+.bscore.n3 .bteam{padding:8px 10px}
+:root[data-theme="sun"] .bfield{background:#000}
+:root[data-theme="sun"] .bteam,:root[data-theme="sun"] .rpanel{border-width:3px}
+:root[data-theme="sun"] .ba.swing,:root[data-theme="sun"] .bswitch{border:2px solid #000}
+.cdlg{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,6,8,.55)}
+.cdlg[hidden]{display:none}
+.cbox{width:100%;max-width:400px;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:16px;padding:18px 18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.cbox p{margin:0 0 16px;font-size:1.05rem;font-weight:600;line-height:1.35}
+.cbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cbtns button{height:50px;border-radius:10px;font-weight:700}
+#cdlgNo{background:var(--btn);color:var(--btn-ink)}
+#cdlgYes{background:var(--field);color:#fff}
+:root[data-theme="sun"] .cbox{border:3px solid #000}
+:root[data-theme="sun"] #cdlgNo{border:2px solid #000}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Point Game</h1>
+    <h1 id="title">Point Game</h1>
     <div class="head-actions">
       <button class="ghost" id="undo" aria-disabled="true">Undo</button>
     </div>
   </header>
 
+  <div class="seg modes" role="radiogroup" aria-label="Game mode" id="modeSeg">
+    <label><input type="radio" name="mode" value="point">Point Game</label>
+    <label><input type="radio" name="mode" value="bucket">Bucket Ball</label>
+  </div>
+
+  <div id="bucketView" class="bucket-only">
+    <section class="bscore" id="bScore" aria-live="polite"></section>
+    <section class="bfield" id="bField"></section>
+    <div id="bRunner"></div>
+    <div class="bacts">
+      <div class="brow">
+        <button class="ba swing" data-b="miss">Miss<small>Swing &amp; miss</small></button>
+        <button class="ba swing" data-b="foul">Foul<small>Foul ball</small></button>
+        <button class="ba out" data-b="out">Out<small>In play</small></button>
+      </div>
+      <div class="brow hits">
+        <button class="ba hit" data-b="h1">1B<small>Single</small></button>
+        <button class="ba hit" data-b="h2">2B<small>Double</small></button>
+        <button class="ba hit" data-b="h3">3B<small>Triple</small></button>
+        <button class="ba hr" data-b="h4">HR<small>Home run</small></button>
+      </div>
+    </div>
+    <button class="bswitch" id="bSwitch" data-b="switch"></button>
+
+    <h2>Line score</h2>
+    <div class="tablewrap lines"><table id="bLines"></table></div>
+
+    <details>
+      <summary>Bucket Ball rules</summary>
+      <ul id="bRules"></ul>
+    </details>
+  </div>
+
+  <div id="pointView" class="point-only">
   <nav class="rounds" id="rounds" aria-label="Rounds"></nav>
   <section class="situation" id="situation" aria-live="polite"></section>
   <section class="teams" id="teams"></section>
@@ -223,6 +327,7 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
       <li>Exit speed bonus: over 90 is +1, over 95 is +2.</li>
     </ul>
   </details>
+  </div>
 
   <details>
     <summary>Settings</summary>
@@ -240,12 +345,37 @@ label.sm{font-size:.8rem;color:var(--muted);display:block;margin-bottom:4px}
       <label for="nozoom"><b>Block double-tap zoom</b><span class="sub">Quick taps on buttons won't zoom the screen. Pinch to zoom still works.</span></label>
       <span class="switch"><input type="checkbox" id="nozoom" role="switch"><span class="track"></span></span>
     </div>
+    <div class="bucket-only">
+      <div class="setting">
+        <div><b>Balls per bucket</b><span class="sub">Changing it also adjusts the bucket in progress.</span></div>
+        <div class="stepper"><button id="bsDown" aria-label="One fewer ball per bucket">−</button><output id="bsSize">21</output><button class="plus" id="bsUp" aria-label="One more ball per bucket">+</button></div>
+      </div>
+      <b>Number of teams</b>
+      <div class="seg bcount" role="radiogroup" aria-label="Number of Bucket Ball teams" id="bCount">
+        <label><input type="radio" name="bcount" value="2">2 teams</label>
+        <label><input type="radio" name="bcount" value="3">3 teams</label>
+        <label><input type="radio" name="bcount" value="4">4 teams</label>
+      </div>
+      <label class="sm">Bucket Ball teams, in batting order</label>
+      <div class="bnames">
+        <input type="text" data-bname="0" maxlength="24" aria-label="Bucket Ball team 1 name">
+        <input type="text" data-bname="1" maxlength="24" aria-label="Bucket Ball team 2 name">
+        <input type="text" data-bname="2" maxlength="24" aria-label="Bucket Ball team 3 name">
+        <input type="text" data-bname="3" maxlength="24" aria-label="Bucket Ball team 4 name">
+      </div>
+    </div>
     <label class="sm" for="notes">Notes</label>
     <textarea id="notes" placeholder="Anything worth remembering from today"></textarea>
-    <button class="danger" id="reset">Start a new game</button>
+    <button class="danger point-only" id="reset">Start a new game</button>
+    <button class="danger bucket-only" id="bReset">Start a new Bucket Ball game</button>
   </details>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="cdlg" id="cdlg" hidden role="alertdialog" aria-modal="true" aria-labelledby="cdlgMsg">
+  <div class="cbox"><p id="cdlgMsg"></p>
+    <div class="cbtns"><button id="cdlgNo">Cancel</button><button id="cdlgYes">OK</button></div>
+  </div>
+</div>
 
 <script>
 const ROUNDS = [
@@ -419,8 +549,34 @@ function renderSetup(){
   const notes = document.getElementById("notes");
   if(document.activeElement!==notes) notes.value = state.notes || "";
 }
-function renderUndo(){ document.getElementById("undo").setAttribute("aria-disabled", history.length? "false":"true"); }
+function renderUndo(){ const h = mode==="bucket" ? bHist : history; document.getElementById("undo").setAttribute("aria-disabled", h.length? "false":"true"); }
 function render(){ renderRounds(); renderSituation(); renderTeams(); renderStandings(); renderPlayers(); renderSetup(); renderUndo(); }
+
+// In-app confirmation. The hosted page blocks the browser's confirm() pop-up.
+function ask(msg, yesLabel){
+  return new Promise(resolve=>{
+    const d = document.getElementById("cdlg"), yes = document.getElementById("cdlgYes"), no = document.getElementById("cdlgNo");
+    const back = document.activeElement;
+    document.getElementById("cdlgMsg").textContent = msg;
+    yes.textContent = yesLabel || "OK";
+    d.hidden = false; yes.focus();
+    const done = v => {
+      d.hidden = true;
+      yes.removeEventListener("click", onYes); no.removeEventListener("click", onNo);
+      d.removeEventListener("click", onBack); document.removeEventListener("keydown", onKey, true);
+      if(back && back.focus) back.focus();
+      resolve(v);
+    };
+    const onYes = () => done(true), onNo = () => done(false);
+    const onBack = e => { if(e.target===d) done(false); };
+    const onKey = e => {
+      if(e.key==="Escape"){ e.preventDefault(); done(false); }
+      else if(e.key==="Tab"){ e.preventDefault(); (document.activeElement===yes ? no : yes).focus(); }
+    };
+    yes.addEventListener("click", onYes); no.addEventListener("click", onNo);
+    d.addEventListener("click", onBack); document.addEventListener("keydown", onKey, true);
+  });
+}
 
 let toastTimer;
 function toast(msg){
@@ -434,7 +590,7 @@ document.getElementById("rounds").addEventListener("click",e=>{
   state.round = +b.dataset.round; save(); render();
 });
 
-document.getElementById("teams").addEventListener("click",e=>{
+document.getElementById("teams").addEventListener("click",async e=>{
   const b = e.target.closest("[data-act]"); if(!b) return;
   const t = +b.closest("[data-team]").dataset.team;
   const act = b.dataset.act;
@@ -459,7 +615,7 @@ document.getElementById("teams").addEventListener("click",e=>{
     if(state.teams[t].players.length<=1) return;
     const name = pName(t,i), g = pGame(t,i);
     const touched = state.scores.some(rd=>{const c=rd[t][i]; return c.b||c.p||c.s;});
-    if(touched && !confirm(`Remove ${name}? Their ${g} point${Math.abs(g)===1?'':'s'} come off ${state.teams[t].name}'s total.`)) return;
+    if(touched && !(await ask(`Remove ${name}? Their ${g} point${Math.abs(g)===1?'':'s'} come off ${state.teams[t].name}'s total.`, "Remove"))) return;
     snapshot();
     state.teams[t].players.splice(i,1);
     state.scores.forEach(rd=>rd[t].splice(i,1));
@@ -513,6 +669,11 @@ document.getElementById("teams").addEventListener("keydown",e=>{
 });
 
 document.getElementById("undo").addEventListener("click",()=>{
+  if(mode==="bucket"){
+    if(!bHist.length) return;
+    bs = JSON.parse(bHist.pop()); bSel = 0; bSave(); renderBucket(); renderUndo(); toast("Last change undone");
+    return;
+  }
   if(!history.length) return;
   state = JSON.parse(history.pop()); save(); render(); toast("Last change undone");
 });
@@ -540,8 +701,8 @@ document.getElementById("nozoom").addEventListener("change",e=>{
 });
 document.getElementById("notes").addEventListener("input",e=>{ state.notes = e.target.value; save(); });
 
-document.getElementById("reset").addEventListener("click",()=>{
-  if(!confirm("Clear every score and start a new game? Team names and lineups stay.")) return;
+document.getElementById("reset").addEventListener("click",async ()=>{
+  if(!(await ask("Clear every score and start a new game? Team names and lineups stay.", "Start new game"))) return;
   snapshot();
   const teams = state.teams, notes = state.notes;
   state = blank(teams); state.notes = notes;
@@ -549,7 +710,223 @@ document.getElementById("reset").addEventListener("click",()=>{
   save(); render(); toast("New game started. Undo brings it back.");
 });
 
+/* ---------- Bucket Ball ---------- */
+const BKEY = "bucket-ball-v1", MODE_KEY = "point-game-mode";
+const BDEF = ["Alpha","Bravo","Charlie","Delta"];
+const BN = ["","1st","2nd","3rd","home"];
+const START_BASES = () => [false,true,false,false];
+function bBlank(size, names, n){
+  size = size || 21; n = n || 2;
+  names = names || [0,1,2,3].map(t=>(state.teams[t] && state.teams[t].name) || BDEF[t]);
+  return {v:1, size, n, names:names.slice(0,4), bat:0, round:0, left:size, outs:0, inning:1, bases:START_BASES(), lines:[[0],[],[],[]]};
+}
+function bLoad(){
+  try{
+    const s = JSON.parse(localStorage.getItem(BKEY));
+    if(s && s.v===1 && s.lines && s.bases){
+      if(!s.n) s.n = 2;
+      while(s.names.length<4){ const t = s.names.length; s.names.push((state.teams[t] && state.teams[t].name) || ""); }
+      while(s.lines.length<4) s.lines.push([]);
+      return s;
+    }
+  }catch(e){}
+  return bBlank();
+}
+let bs = bLoad();
+let bHist = [];
+let bSel = 0;
+function bSave(){ try{ localStorage.setItem(BKEY, JSON.stringify(bs)); }catch(e){} }
+function bSnap(){ bHist.push(JSON.stringify(bs)); if(bHist.length>200) bHist.shift(); }
+const bIdx = () => Array.from({length:bs.n},(_,t)=>t);
+const bNext = () => (bs.bat+1) % bs.n;
+const bName = t => (bs.names[t]||"").trim() || BDEF[t];
+const bTot = t => bs.lines[t].reduce((a,v)=>a+(v||0),0);
+// +2 the moment a runner reaches 3rd, +1 when he crosses home
+const bPts = (from,to) => (from<3 && to>=3 ? 2 : 0) + (to===4 ? 1 : 0);
+function bAdd(p){ bs.lines[bs.bat][bs.round] = (bs.lines[bs.bat][bs.round]||0) + p; }
+function bOut(){
+  bs.outs++;
+  if(bs.outs>=3){ bs.outs = 0; bs.inning++; bs.bases = START_BASES(); bSel = 0; return true; }
+  return false;
+}
+// Batter reaches base n (4 = home run). Runners move only as far as they're forced.
+function bHit(n){
+  let g = bPts(0,n), prev = n;
+  const nb = [false,false,false,false];
+  if(n<4) nb[n] = true;
+  for(const b of [1,2,3]){
+    if(!bs.bases[b]) continue;
+    let to = b<=prev ? prev+1 : b;
+    if(to>4) to = 4;
+    g += bPts(b,to);
+    if(to<4) nb[to] = true;
+    prev = to;
+  }
+  bs.bases = nb; bAdd(g);
+  return g;
+}
+async function bSwitch(){
+  if(bs.left>0 && !(await ask(`${bName(bs.bat)} still has ${bs.left} ball${bs.left===1?'':'s'} left. End their bucket now?`, "End bucket"))) return;
+  bSnap();
+  bs.bat = bNext(); if(bs.bat===0) bs.round++;
+  bs.lines[bs.bat][bs.round] = bs.lines[bs.bat][bs.round] || 0;
+  bs.left = bs.size; bs.outs = 0; bs.inning = 1; bs.bases = START_BASES(); bSel = 0;
+  bSave(); renderBucket(); renderUndo(); toast(`${bName(bs.bat)} up with a full bucket`);
+}
+
+function renderBucket(){
+  const sc = document.getElementById("bScore");
+  sc.className = `bscore n${bs.n}`;
+  sc.innerHTML = bIdx().map(t=>{
+    const up = t===bs.bat;
+    const idle = bs.n===2 ? 'In the field'
+      : t===bNext() ? 'Up next'
+      : bs.lines[t][bs.round]!=null ? `${bs.lines[t][bs.round]} this round` : 'Waiting';
+    return `<div class="bteam${up?' up':''}"><div class="nm">${esc(bName(t))}</div>
+      <div class="tt">${bTot(t)}</div>
+      <div class="st">${up ? `At bat, ${bs.lines[t][bs.round]||0} this bucket` : idle}</div></div>`;
+  }).join("");
+
+  const baseBtn = n => `<button class="bb b${n}${bs.bases[n]?' on':''}${bSel===n?' sel':''}" data-b="base" data-base="${n}" ${bs.bases[n]?'':'disabled'}
+      aria-label="${bs.bases[n] ? `Runner on ${BN[n]}. Tap to move or mark out` : `${BN[n]} base, empty`}"><span>${n}B</span></button>`;
+  const dots = Array.from({length:bs.size},(_,i)=>`<i class="${i<bs.left?'':'used'}"></i>`).join("");
+  document.getElementById("bField").innerHTML = `
+    <div class="bdia"><div class="path"></div>${baseBtn(2)}${baseBtn(3)}${baseBtn(1)}<div class="plate"></div></div>
+    <div class="binfo sit-text">
+      <div class="rn">${esc(bName(bs.bat))} at bat, round ${bs.round+1}</div>
+      <div class="desc">Inning ${bs.inning}</div>
+      <div class="outs"><span class="dot${bs.outs>=1?' on':''}"></span><span class="dot${bs.outs>=2?' on':''}"></span>&nbsp;${bs.outs} out${bs.outs===1?'':'s'}</div>
+      <div class="balls"><b>${bs.left}</b>of ${bs.size} balls left</div>
+    </div>
+    <div class="bdots" aria-hidden="true">${dots}</div>`;
+
+  const rp = document.getElementById("bRunner");
+  if(bSel && bs.bases[bSel]){
+    let opts = "";
+    for(let to=bSel+1; to<=4; to++){
+      if(to<4 && bs.bases[to]) break; // can't pass the runner ahead
+      const p = bPts(bSel,to);
+      opts += `<button class="${to===4?'sc':'adv'}" data-b="rto" data-to="${to}">${to===4?'Scores':'To '+BN[to]}<small>${p?'+'+p:'No points'}</small></button>`;
+    }
+    rp.innerHTML = `<div class="rpanel"><div class="rh">Runner on ${BN[bSel]}</div><div class="rbtns">${opts}
+      <button class="ro" data-b="rout">Out<small>Runner out</small></button>
+      <button data-b="rcancel">Cancel<small>Leave him</small></button></div></div>`;
+  } else rp.innerHTML = "";
+
+  const empty = bs.left<=0;
+  document.querySelectorAll("#bucketView .ba").forEach(x=>x.disabled = empty);
+  const sw = document.getElementById("bSwitch");
+  const nextT = bNext();
+  sw.className = "bswitch" + (empty ? " go" : "");
+  sw.textContent = empty
+    ? `Bucket's empty. ${bName(nextT)} bats next`
+    : `End ${bName(bs.bat)}'s bucket early`;
+
+  const cols = Math.max(bs.round+1, 3);
+  let h = `<thead><tr><th>Team</th>${Array.from({length:cols},(_,r)=>`<th class="${r===bs.round?'cur':''}">R${r+1}</th>`).join("")}<th>Total</th></tr></thead><tbody>`;
+  const max = Math.max(...bIdx().map(bTot));
+  bIdx().forEach(t=>{
+    const lead = max!==0 && bTot(t)===max;
+    h += `<tr class="${lead?'leader':''}"><td>${esc(bName(t))}</td>${Array.from({length:cols},(_,r)=>{
+      const v = bs.lines[t][r];
+      return `<td class="${r===bs.round?'cur':''}">${v==null?'':v}</td>`;
+    }).join("")}<td class="tot">${bTot(t)}</td></tr>`;
+  });
+  document.getElementById("bLines").innerHTML = h + "</tbody>";
+
+  document.getElementById("bRules").innerHTML = `
+    <li>Each team hits from a bucket of ${bs.size} balls. When the bucket's empty, switch sides.</li>
+    <li>Any ball swung at is gone: in play, foul, or swing and miss. Takes don't cost a ball.</li>
+    <li>Every inning starts with a runner on 1st. Three outs clears the bases and puts a new runner on 1st; the bucket keeps going.</li>
+    <li>+2 when a runner reaches 3rd, +1 when he crosses home. Scoring from 1st or 2nd is worth +3.</li>
+    <li>Hits move runners only as far as they're forced. Tap a runner on the diamond to send him further or mark him out.</li>`;
+
+  document.getElementById("bsSize").textContent = bs.size;
+  const cr = document.querySelector(`#bCount input[value="${bs.n}"]`); if(cr) cr.checked = true;
+  document.querySelectorAll("[data-bname]").forEach(inp=>{ inp.hidden = +inp.dataset.bname >= bs.n; inp.placeholder = BDEF[+inp.dataset.bname]; });
+  document.querySelectorAll("[data-bname]").forEach(inp=>{ if(document.activeElement!==inp) inp.value = bs.names[+inp.dataset.bname] || ""; });
+}
+
+document.getElementById("bucketView").addEventListener("click",e=>{
+  const b = e.target.closest("[data-b]"); if(!b || b.disabled) return;
+  const a = b.dataset.b;
+  if(a==="base"){ const n = +b.dataset.base; if(!bs.bases[n]) return; bSel = bSel===n ? 0 : n; renderBucket(); return; }
+  if(a==="rcancel"){ bSel = 0; renderBucket(); return; }
+  if(a==="switch"){ bSwitch(); return; }
+  let msg = "";
+  if(a==="miss" || a==="foul" || a==="out" || /^h[1-4]$/.test(a)){
+    if(bs.left<=0) return;
+    bSnap(); bs.left--; bSel = 0;
+    if(a==="miss") msg = "Swing and miss";
+    else if(a==="foul") msg = "Foul ball";
+    else if(a==="out") msg = bOut() ? "3 outs. New runner on 1st" : "Out in play";
+    else {
+      const n = +a[1], g = bHit(n);
+      msg = ["","Single","Double","Triple","Home run"][n] + (g ? `, +${g}` : "");
+    }
+    if(bs.left===0) msg += ". Bucket's empty";
+  } else if(a==="rto"){
+    const from = bSel, to = +b.dataset.to;
+    if(!from || !bs.bases[from]) return;
+    bSnap();
+    const p = bPts(from,to); bAdd(p);
+    bs.bases[from] = false; if(to<4) bs.bases[to] = true; bSel = 0;
+    msg = to===4 ? `Run scores, +${p}` : `Runner to ${BN[to]}${p?`, +${p}`:''}`;
+  } else if(a==="rout"){
+    const from = bSel; if(!from) return;
+    bSnap(); bs.bases[from] = false; bSel = 0;
+    msg = bOut() ? "3 outs. New runner on 1st" : "Runner out";
+  } else return;
+  bSave(); renderBucket(); renderUndo(); toast(msg);
+});
+
+function bSetSize(d){
+  const n = Math.min(99, Math.max(1, bs.size+d));
+  if(n===bs.size) return;
+  bSnap();
+  bs.left = Math.min(n, Math.max(0, bs.left + (n-bs.size)));
+  bs.size = n;
+  bSave(); renderBucket(); renderUndo();
+}
+document.getElementById("bsDown").addEventListener("click",()=>bSetSize(-1));
+document.getElementById("bsUp").addEventListener("click",()=>bSetSize(1));
+document.querySelectorAll("[data-bname]").forEach(inp=>inp.addEventListener("input",()=>{
+  bs.names[+inp.dataset.bname] = inp.value; bSave(); renderBucket();
+}));
+document.getElementById("bCount").addEventListener("change",e=>{
+  const n = +e.target.value; if(n===bs.n) return;
+  bSnap();
+  bs.n = n;
+  if(bs.bat>=n){ // the team at bat was removed: start the next round with team 1
+    bs.bat = 0; bs.round++;
+    bs.lines[0][bs.round] = bs.lines[0][bs.round] || 0;
+    bs.left = bs.size; bs.outs = 0; bs.inning = 1; bs.bases = START_BASES(); bSel = 0;
+  }
+  bSave(); renderBucket(); renderUndo(); toast(`${n} teams. Undo switches back.`);
+});
+document.getElementById("bReset").addEventListener("click",async ()=>{
+  if(!(await ask("Clear the Bucket Ball score and start over? Team names, number of teams and bucket size stay.", "Start over"))) return;
+  bSnap(); bs = bBlank(bs.size, bs.names, bs.n); bSel = 0;
+  bSave(); renderBucket(); renderUndo(); toast("New Bucket Ball game. Undo brings it back.");
+});
+
+let mode = "point";
+try{ if(localStorage.getItem(MODE_KEY)==="bucket") mode = "bucket"; }catch(e){}
+function applyMode(m){
+  mode = m;
+  document.documentElement.dataset.mode = m;
+  document.getElementById("title").textContent = m==="bucket" ? "Bucket Ball" : "Point Game";
+  const r = document.querySelector(`#modeSeg input[value="${m}"]`); if(r) r.checked = true;
+  renderUndo();
+}
+document.getElementById("modeSeg").addEventListener("change",e=>{
+  applyMode(e.target.value);
+  try{ localStorage.setItem(MODE_KEY, e.target.value); }catch(err){}
+});
+
+applyMode(mode);
 render();
+renderBucket();
 </script>
 </body>
 </html>
