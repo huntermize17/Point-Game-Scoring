@@ -134,7 +134,14 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .editor{border-top:1px solid var(--line);padding-top:10px}
 .editor label.sm{margin-top:6px}
 .slots{display:grid;gap:6px}
-.slot{display:grid;grid-template-columns:28px 1fr 44px;align-items:center;gap:6px}
+.slot{display:grid;grid-template-columns:34px 24px 1fr 44px;align-items:center;gap:6px;border-radius:10px}
+.drag{width:34px;height:44px;border-radius:8px;color:var(--muted);display:grid;place-items:center;touch-action:none;cursor:grab}
+.drag:active{cursor:grabbing}
+.slot.dragging{position:relative;z-index:5;background:var(--panel);box-shadow:0 8px 20px rgba(0,0,0,.28);cursor:grabbing}
+.slot.dragging .drag{color:var(--field)}
+.slots.sorting .slot:not(.dragging){transition:transform .15s ease}
+body.lineup-drag{user-select:none;-webkit-user-select:none}
+@media (prefers-reduced-motion:reduce){.slots.sorting .slot:not(.dragging){transition:none}}
 .slot .rm{width:44px;height:44px;border-radius:8px;background:var(--btn);color:var(--btn-ink);font-size:1.3rem;font-weight:700}
 .slot .rm:disabled{opacity:.35;cursor:default}
 .addp{margin-top:10px;width:100%;padding:11px;border-radius:10px;border:2px dashed var(--line);color:var(--field);font-weight:700}
@@ -503,7 +510,7 @@ function renderTeams(){
         <label class="sm" for="tn${t}">Team name</label>
         <input type="text" id="tn${t}" data-tname="${t}" maxlength="24" value="${esc(team.name)}">
         <label class="sm">Lineup</label>
-        <div class="slots">${team.players.map((p,i)=>`<div class="slot"><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"><button class="rm" data-act="rmp" data-idx="${i}" aria-label="Remove ${esc(pName(t,i))}" ${team.players.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
+        <div class="slots" data-sort="p" data-st="${t}">${team.players.map((p,i)=>`<div class="slot"><button class="drag" aria-label="Move ${esc(pName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg></button><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"><button class="rm" data-act="rmp" data-idx="${i}" aria-label="Remove ${esc(pName(t,i))}" ${team.players.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
         <button class="addp" data-act="addp" ${team.players.length>=MAXP?'disabled':''}>+ Add player</button>
       </div>`;
     } else {
@@ -594,6 +601,83 @@ function ask(msg, yesLabel){
     d.addEventListener("click", onBack); document.addEventListener("keydown", onKey, true);
   });
 }
+
+/* ---------- Drag to reorder lineups (touch, mouse, keyboard) ---------- */
+const sorters = {};           // "p" = Point Game, "b" = Bucket Ball; each is (team, from, to) => void
+const ordSuffix = n => (n%100>=11 && n%100<=13) ? "th" : ({1:"st",2:"nd",3:"rd"}[n%10] || "th");
+const moveItem = (arr, from, to) => arr.splice(to, 0, arr.splice(from, 1)[0]);
+const movedIndex = (i, from, to) => i===from ? to : (from<to && i>from && i<=to) ? i-1 : (to<from && i>=to && i<from) ? i+1 : i;
+function focusHandle(kind, t, i){
+  const h = document.querySelector(`.slots[data-sort="${kind}"][data-st="${t}"] > .slot:nth-child(${i+1}) .drag`);
+  if(h) h.focus();
+}
+(function(){
+  let d = null;
+  function update(){
+    const y = d.lastY + window.scrollY - d.startY;
+    d.row.style.transform = `translateY(${y}px)`;
+    const mid = d.mids[d.from] + y;
+    let to = d.from;
+    while(to < d.mids.length-1 && mid > d.mids[to+1]) to++;
+    while(to > 0 && mid < d.mids[to-1]) to--;
+    d.to = to;
+    d.rows.forEach((r,i)=>{
+      if(i===d.from) return;
+      let shift = 0;
+      if(d.from<to && i>d.from && i<=to) shift = -d.step;
+      if(to<d.from && i>=to && i<d.from) shift = d.step;
+      r.style.transform = shift ? `translateY(${shift}px)` : "";
+    });
+  }
+  function tick(){
+    if(!d) return;
+    const edge = 70, h = window.innerHeight;
+    const v = d.lastY < edge ? -Math.ceil((edge-d.lastY)/5) : d.lastY > h-edge ? Math.ceil((d.lastY-(h-edge))/5) : 0;
+    if(v){ window.scrollBy(0, v); update(); }
+    d.raf = requestAnimationFrame(tick);
+  }
+  function end(commit){
+    if(!d) return;
+    cancelAnimationFrame(d.raf);
+    const {list, row, rows, from, to} = d; d = null;
+    rows.forEach(r=>r.style.transform = "");
+    row.classList.remove("dragging"); list.classList.remove("sorting"); document.body.classList.remove("lineup-drag");
+    if(commit && to!==from){
+      sorters[list.dataset.sort](+list.dataset.st, from, to);
+      focusHandle(list.dataset.sort, list.dataset.st, to);
+    }
+  }
+  document.addEventListener("pointerdown", e=>{
+    const h = e.target.closest(".slots .drag");
+    if(!h || d || (e.pointerType==="mouse" && e.button!==0)) return;
+    e.preventDefault();
+    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    const list = h.closest(".slots"), row = h.closest(".slot");
+    const rows = [...list.children];
+    const rects = rows.map(r=>r.getBoundingClientRect());
+    d = { list, row, rows, from: rows.indexOf(row), to: rows.indexOf(row),
+          mids: rects.map(r=>r.top + window.scrollY + r.height/2),
+          step: rows.length>1 ? Math.abs(rects[1].top - rects[0].top) : rects[0].height,
+          startY: e.clientY + window.scrollY, lastY: e.clientY, raf: 0 };
+    try{ h.setPointerCapture(e.pointerId); }catch(err){}
+    row.classList.add("dragging"); list.classList.add("sorting"); document.body.classList.add("lineup-drag");
+    d.raf = requestAnimationFrame(tick);
+  });
+  document.addEventListener("pointermove", e=>{ if(!d) return; e.preventDefault(); d.lastY = e.clientY; update(); }, {passive:false});
+  document.addEventListener("pointerup", ()=>end(true));
+  document.addEventListener("pointercancel", ()=>end(false));
+  document.addEventListener("keydown", e=>{
+    if(d && e.key==="Escape"){ end(false); return; }
+    const h = e.target.closest && e.target.closest(".slots .drag");
+    if(!h || (e.key!=="ArrowUp" && e.key!=="ArrowDown")) return;
+    e.preventDefault();
+    const list = h.closest(".slots"), rows = [...list.children], from = rows.indexOf(h.closest(".slot"));
+    const to = from + (e.key==="ArrowUp" ? -1 : 1);
+    if(to<0 || to>=rows.length) return;
+    sorters[list.dataset.sort](+list.dataset.st, from, to);
+    focusHandle(list.dataset.sort, list.dataset.st, to);
+  });
+})();
 
 let toastTimer;
 function toast(msg){
@@ -939,7 +1023,7 @@ function renderLineups(){
     const lu = bs.lineups[t], cur = upIdx(t);
     const src = (state.teams[t] ? state.teams[t].players : []).filter(p=>(p||"").trim());
     return `<div class="blu"><h3>${esc(bName(t))}</h3>
-      <div class="slots">${lu.map((p,i)=>`<div class="slot${i===cur?' cur':''}"><span>${i+1}</span>
+      <div class="slots" data-sort="b" data-st="${t}">${lu.map((p,i)=>`<div class="slot${i===cur?' cur':''}"><button class="drag" aria-label="Move ${esc(hName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg></button><span>${i+1}</span>
         <input type="text" data-lt="${t}" data-li="${i}" maxlength="24" placeholder="Hitter ${i+1}" value="${esc(p)}" aria-label="${esc(bName(t))} hitter ${i+1}${i===cur?', batting next':''}" enterkeyhint="next">
         <button class="rm" data-lact="rm" data-lt="${t}" data-li="${i}" aria-label="Remove ${esc(hName(t,i))}" ${lu.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
       <button class="addp" data-lact="add" data-lt="${t}" ${lu.length>=MAXP?'disabled':''}>+ Add hitter</button>
@@ -979,6 +1063,23 @@ document.getElementById("bLineups").addEventListener("keydown",e=>{
   const nx = document.querySelector(`[data-lt="${inp.dataset.lt}"][data-li="${+inp.dataset.li+1}"]`);
   if(nx) nx.focus(); else inp.blur();
 });
+
+sorters.p = (t, from, to)=>{
+  snapshot();
+  moveItem(state.teams[t].players, from, to);
+  state.scores.forEach(rd=>moveItem(rd[t], from, to));
+  open = {t:-1, i:-1};
+  save(); render(); toast(`${pName(t,to)} now bats ${to+1}${ordSuffix(to+1)}`);
+};
+// Bucket Ball sorter: the hitter who was due up stays due up
+sorters.b = (t, from, to)=>{
+  bSnap();
+  const cur = upIdx(t);
+  moveItem(bs.lineups[t], from, to);
+  bs.up[t] = movedIndex(cur, from, to);
+  bSave(); renderLineups(); renderBucket(); renderUndo();
+  toast(`${hName(t,to)} now bats ${to+1}${ordSuffix(to+1)}`);
+};
 
 function bSetSize(d){
   const n = Math.min(99, Math.max(1, bs.size+d));
