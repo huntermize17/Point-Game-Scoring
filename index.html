@@ -243,6 +243,18 @@ html:not([data-mode="bucket"]) .bucket-only{display:none!important}
 .bswitch{width:100%;padding:13px;border-radius:12px;font-weight:700;background:var(--btn);color:var(--btn-ink)}
 .bswitch.go{background:var(--bulb);color:var(--bulb-ink);font-family:var(--display);font-weight:900;font-size:1.5rem;padding:14px}
 .lines table{min-width:0}
+.nowbat{flex:1 1 100%;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;background:rgba(0,0,0,.18);border-radius:10px;padding:6px}
+.nowbat .nb{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,.16);color:#fff;font-size:1.6rem;font-weight:700;line-height:1}
+.nowbat .nbt{min-width:0;text-align:center;line-height:1.15}
+.nowbat small{display:block;font-size:.75rem;font-weight:600;opacity:.85}
+.nowbat b{display:block;font-family:var(--display);font-weight:900;font-size:1.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.blus{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:10px}
+.blu{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px 12px}
+.blu h3{font-family:var(--display);font-weight:800;font-size:1.4rem;margin:0 0 8px}
+.blu .slot.cur input{border-color:var(--field);box-shadow:0 0 0 2px var(--field)}
+.lcopy{margin-top:6px;width:100%;padding:10px;border-radius:10px;background:var(--btn);color:var(--btn-ink);font-weight:700}
+:root[data-theme="sun"] .blu{border-width:3px}
+:root[data-theme="sun"] .nowbat{background:rgba(255,255,255,.12)}
 .bnames{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .seg.bcount{grid-template-columns:repeat(3,1fr);margin:6px 0 12px}
 .bscore.n3{grid-template-columns:repeat(3,1fr)}
@@ -299,6 +311,11 @@ html:not([data-mode="bucket"]) .bucket-only{display:none!important}
 
     <h2>Line score</h2>
     <div class="tablewrap lines"><table id="bLines"></table></div>
+
+    <details id="bLineDet">
+      <summary>Lineups</summary>
+      <div class="blus" id="bLineups"></div>
+    </details>
 
     <details>
       <summary>Bucket Ball rules</summary>
@@ -671,7 +688,7 @@ document.getElementById("teams").addEventListener("keydown",e=>{
 document.getElementById("undo").addEventListener("click",()=>{
   if(mode==="bucket"){
     if(!bHist.length) return;
-    bs = JSON.parse(bHist.pop()); bSel = 0; bSave(); renderBucket(); renderUndo(); toast("Last change undone");
+    bs = JSON.parse(bHist.pop()); bSel = 0; bSave(); renderBucket(); renderLineups(); renderUndo(); toast("Last change undone");
     return;
   }
   if(!history.length) return;
@@ -715,10 +732,12 @@ const BKEY = "bucket-ball-v1", MODE_KEY = "point-game-mode";
 const BDEF = ["Alpha","Bravo","Charlie","Delta"];
 const BN = ["","1st","2nd","3rd","home"];
 const START_BASES = () => [false,true,false,false];
-function bBlank(size, names, n){
+const blankLineup = () => Array(NP).fill("");
+function bBlank(size, names, n, lineups){
   size = size || 21; n = n || 2;
   names = names || [0,1,2,3].map(t=>(state.teams[t] && state.teams[t].name) || BDEF[t]);
-  return {v:1, size, n, names:names.slice(0,4), bat:0, round:0, left:size, outs:0, inning:1, bases:START_BASES(), lines:[[0],[],[],[]]};
+  lineups = lineups ? lineups.map(l=>l.slice()) : [0,1,2,3].map(blankLineup);
+  return {v:1, size, n, names:names.slice(0,4), bat:0, round:0, left:size, outs:0, inning:1, bases:START_BASES(), lines:[[0],[],[],[]], lineups, up:[0,0,0,0]};
 }
 function bLoad(){
   try{
@@ -727,6 +746,9 @@ function bLoad(){
       if(!s.n) s.n = 2;
       while(s.names.length<4){ const t = s.names.length; s.names.push((state.teams[t] && state.teams[t].name) || ""); }
       while(s.lines.length<4) s.lines.push([]);
+      if(!s.lineups) s.lineups = [];
+      while(s.lineups.length<4) s.lineups.push(blankLineup());
+      if(!s.up) s.up = [0,0,0,0];
       return s;
     }
   }catch(e){}
@@ -737,6 +759,20 @@ let bHist = [];
 let bSel = 0;
 function bSave(){ try{ localStorage.setItem(BKEY, JSON.stringify(bs)); }catch(e){} }
 function bSnap(){ bHist.push(JSON.stringify(bs)); if(bHist.length>200) bHist.shift(); }
+const hName = (t,i) => (bs.lineups[t][i]||"").trim() || `Hitter ${i+1}`;
+// Once a team has any names, blank slots are skipped in the batting order.
+const usable = (t,i) => !bs.lineups[t].some(p=>p.trim()) || !!(bs.lineups[t][i]||"").trim();
+function stepIdx(t, from, dir){
+  const L = bs.lineups[t].length; if(!L) return 0;
+  for(let k=1; k<=L; k++){ const i = ((from + dir*k) % L + L) % L; if(usable(t,i)) return i; }
+  return from;
+}
+const upIdx = t => {
+  const L = bs.lineups[t].length; if(!L) return 0;
+  const i = bs.up[t] % L;
+  return usable(t,i) ? i : stepIdx(t, i, 1);
+};
+function bAdvance(){ bs.up[bs.bat] = stepIdx(bs.bat, upIdx(bs.bat), 1); }
 const bIdx = () => Array.from({length:bs.n},(_,t)=>t);
 const bNext = () => (bs.bat+1) % bs.n;
 const bName = t => (bs.names[t]||"").trim() || BDEF[t];
@@ -798,6 +834,13 @@ function renderBucket(){
       <div class="outs"><span class="dot${bs.outs>=1?' on':''}"></span><span class="dot${bs.outs>=2?' on':''}"></span>&nbsp;${bs.outs} out${bs.outs===1?'':'s'}</div>
       <div class="balls"><b>${bs.left}</b>of ${bs.size} balls left</div>
     </div>
+    ${bs.lineups[bs.bat].length ? (()=>{
+      const i = upIdx(bs.bat), nx = stepIdx(bs.bat, i, 1);
+      return `<div class="nowbat">
+        <button class="nb" data-b="bprev" aria-label="Back to previous hitter">‹</button>
+        <div class="nbt" aria-live="polite"><small>Now batting</small><b>${i+1}. ${esc(hName(bs.bat,i))}</b><small>On deck: ${esc(hName(bs.bat,nx))}</small></div>
+        <button class="nb" data-b="bnext" aria-label="Skip to next hitter">›</button></div>`;
+    })() : ''}
     <div class="bdots" aria-hidden="true">${dots}</div>`;
 
   const rp = document.getElementById("bRunner");
@@ -839,6 +882,7 @@ function renderBucket(){
     <li>Any ball swung at is gone: in play, foul, or swing and miss. Takes don't cost a ball.</li>
     <li>Every inning starts with a runner on 1st. Three outs clears the bases and puts a new runner on 1st; the bucket keeps going.</li>
     <li>+2 when a runner reaches 3rd, +1 when he crosses home. Scoring from 1st or 2nd is worth +3.</li>
+    <li>An out or a hit sends up the next hitter in the lineup. Misses and fouls keep the same hitter.</li>
     <li>Hits move runners only as far as they're forced. Tap a runner on the diamond to send him further or mark him out.</li>`;
 
   document.getElementById("bsSize").textContent = bs.size;
@@ -864,6 +908,10 @@ document.getElementById("bucketView").addEventListener("click",e=>{
       const n = +a[1], g = bHit(n);
       msg = ["","Single","Double","Triple","Home run"][n] + (g ? `, +${g}` : "");
     }
+    if(a==="out" || a[0]==="h"){
+      bAdvance();
+      if(bs.lineups[bs.bat].length) msg += `. ${hName(bs.bat, upIdx(bs.bat))} up`;
+    }
     if(bs.left===0) msg += ". Bucket's empty";
   } else if(a==="rto"){
     const from = bSel, to = +b.dataset.to;
@@ -876,8 +924,60 @@ document.getElementById("bucketView").addEventListener("click",e=>{
     const from = bSel; if(!from) return;
     bSnap(); bs.bases[from] = false; bSel = 0;
     msg = bOut() ? "3 outs. New runner on 1st" : "Runner out";
+  } else if(a==="bprev" || a==="bnext"){
+    const L = bs.lineups[bs.bat].length; if(!L) return;
+    bSnap();
+    bs.up[bs.bat] = stepIdx(bs.bat, upIdx(bs.bat), a==="bnext" ? 1 : -1);
+    msg = `${hName(bs.bat, upIdx(bs.bat))} up`;
   } else return;
   bSave(); renderBucket(); renderUndo(); toast(msg);
+  if(!document.getElementById("bLineups").contains(document.activeElement)) renderLineups();
+});
+
+function renderLineups(){
+  document.getElementById("bLineups").innerHTML = bIdx().map(t=>{
+    const lu = bs.lineups[t], cur = upIdx(t);
+    const src = (state.teams[t] ? state.teams[t].players : []).filter(p=>(p||"").trim());
+    return `<div class="blu"><h3>${esc(bName(t))}</h3>
+      <div class="slots">${lu.map((p,i)=>`<div class="slot${i===cur?' cur':''}"><span>${i+1}</span>
+        <input type="text" data-lt="${t}" data-li="${i}" maxlength="24" placeholder="Hitter ${i+1}" value="${esc(p)}" aria-label="${esc(bName(t))} hitter ${i+1}${i===cur?', batting next':''}" enterkeyhint="next">
+        <button class="rm" data-lact="rm" data-lt="${t}" data-li="${i}" aria-label="Remove ${esc(hName(t,i))}" ${lu.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
+      <button class="addp" data-lact="add" data-lt="${t}" ${lu.length>=MAXP?'disabled':''}>+ Add hitter</button>
+      ${src.length ? `<button class="lcopy" data-lact="copy" data-lt="${t}">Use ${esc(state.teams[t].name)}'s Point Game lineup</button>` : ''}
+    </div>`;
+  }).join("");
+}
+document.getElementById("bLineups").addEventListener("click",async e=>{
+  const b = e.target.closest("[data-lact]"); if(!b || b.disabled) return;
+  const t = +b.dataset.lt, lu = bs.lineups[t];
+  if(b.dataset.lact==="add"){
+    if(lu.length>=MAXP) return;
+    bSnap(); lu.push("");
+    bSave(); renderLineups(); renderBucket(); renderUndo();
+    const inp = document.querySelector(`[data-lt="${t}"][data-li="${lu.length-1}"]`); if(inp) inp.focus();
+  } else if(b.dataset.lact==="rm"){
+    if(lu.length<=1) return;
+    const i = +b.dataset.li, cur = upIdx(t);
+    bSnap(); lu.splice(i,1);
+    bs.up[t] = i<cur ? cur-1 : (cur>=lu.length ? 0 : cur);
+    bSave(); renderLineups(); renderBucket(); renderUndo(); toast("Hitter removed. Undo brings them back.");
+  } else if(b.dataset.lact==="copy"){
+    const src = state.teams[t].players.filter(p=>(p||"").trim());
+    if(lu.some(p=>p.trim()) && !(await ask(`Replace ${bName(t)}'s Bucket Ball lineup with the Point Game lineup?`, "Replace"))) return;
+    bSnap(); bs.lineups[t] = src.slice(0, MAXP); bs.up[t] = 0;
+    bSave(); renderLineups(); renderBucket(); renderUndo(); toast(`${bName(t)} lineup copied`);
+  }
+});
+document.getElementById("bLineups").addEventListener("input",e=>{
+  const inp = e.target.closest("[data-lt]"); if(!inp) return;
+  bs.lineups[+inp.dataset.lt][+inp.dataset.li] = inp.value;
+  bSave(); renderBucket();
+});
+document.getElementById("bLineups").addEventListener("keydown",e=>{
+  const inp = e.target.closest("input[data-lt]"); if(!inp || e.key!=="Enter") return;
+  e.preventDefault();
+  const nx = document.querySelector(`[data-lt="${inp.dataset.lt}"][data-li="${+inp.dataset.li+1}"]`);
+  if(nx) nx.focus(); else inp.blur();
 });
 
 function bSetSize(d){
@@ -891,7 +991,7 @@ function bSetSize(d){
 document.getElementById("bsDown").addEventListener("click",()=>bSetSize(-1));
 document.getElementById("bsUp").addEventListener("click",()=>bSetSize(1));
 document.querySelectorAll("[data-bname]").forEach(inp=>inp.addEventListener("input",()=>{
-  bs.names[+inp.dataset.bname] = inp.value; bSave(); renderBucket();
+  bs.names[+inp.dataset.bname] = inp.value; bSave(); renderBucket(); renderLineups();
 }));
 document.getElementById("bCount").addEventListener("change",e=>{
   const n = +e.target.value; if(n===bs.n) return;
@@ -902,12 +1002,12 @@ document.getElementById("bCount").addEventListener("change",e=>{
     bs.lines[0][bs.round] = bs.lines[0][bs.round] || 0;
     bs.left = bs.size; bs.outs = 0; bs.inning = 1; bs.bases = START_BASES(); bSel = 0;
   }
-  bSave(); renderBucket(); renderUndo(); toast(`${n} teams. Undo switches back.`);
+  bSave(); renderBucket(); renderLineups(); renderUndo(); toast(`${n} teams. Undo switches back.`);
 });
 document.getElementById("bReset").addEventListener("click",async ()=>{
-  if(!(await ask("Clear the Bucket Ball score and start over? Team names, number of teams and bucket size stay.", "Start over"))) return;
-  bSnap(); bs = bBlank(bs.size, bs.names, bs.n); bSel = 0;
-  bSave(); renderBucket(); renderUndo(); toast("New Bucket Ball game. Undo brings it back.");
+  if(!(await ask("Clear the Bucket Ball score and start over? Team names, lineups, number of teams and bucket size stay.", "Start over"))) return;
+  bSnap(); bs = bBlank(bs.size, bs.names, bs.n, bs.lineups); bSel = 0;
+  bSave(); renderBucket(); renderLineups(); renderUndo(); toast("New Bucket Ball game. Undo brings it back.");
 });
 
 let mode = "point";
@@ -927,6 +1027,8 @@ document.getElementById("modeSeg").addEventListener("change",e=>{
 applyMode(mode);
 render();
 renderBucket();
+renderLineups();
+if(bs.lineups.slice(0,bs.n).every(l=>!l.some(p=>p.trim()))) document.getElementById("bLineDet").open = true;
 </script>
 </body>
 </html>
