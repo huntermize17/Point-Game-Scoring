@@ -134,13 +134,14 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,8vw,3.6rem)
 .editor{border-top:1px solid var(--line);padding-top:10px}
 .editor label.sm{margin-top:6px}
 .slots{display:grid;gap:6px}
-.slot{display:grid;grid-template-columns:34px 24px 1fr 44px;align-items:center;gap:6px;border-radius:10px}
-.drag{width:34px;height:44px;border-radius:8px;color:var(--muted);display:grid;place-items:center;touch-action:none;cursor:grab}
+.slot{display:grid;grid-template-columns:60px 1fr 44px;align-items:center;gap:6px;border-radius:10px}
+.drag{width:60px;height:46px;border-radius:8px;background:var(--panel2);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.drag *{pointer-events:none}
 .drag:active{cursor:grabbing}
 .slot.dragging{position:relative;z-index:5;background:var(--panel);box-shadow:0 8px 20px rgba(0,0,0,.28);cursor:grabbing}
 .slot.dragging .drag{color:var(--field)}
 .slots.sorting .slot:not(.dragging){transition:transform .15s ease}
-body.lineup-drag{user-select:none;-webkit-user-select:none}
+html.lineup-drag,body.lineup-drag{user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 @media (prefers-reduced-motion:reduce){.slots.sorting .slot:not(.dragging){transition:none}}
 .slot .rm{width:44px;height:44px;border-radius:8px;background:var(--btn);color:var(--btn-ink);font-size:1.3rem;font-weight:700}
 .slot .rm:disabled{opacity:.35;cursor:default}
@@ -255,7 +256,10 @@ html:not([data-mode="bucket"]) .bucket-only{display:none!important}
 .nowbat .nbt{min-width:0;text-align:center;line-height:1.15}
 .nowbat small{display:block;font-size:.75rem;font-weight:600;opacity:.85}
 .nowbat b{display:block;font-family:var(--display);font-weight:900;font-size:1.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.blus{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:10px}
+.blus{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));margin-top:10px}
+.slot input{min-width:0;width:100%}
+.slot .rm,.slot .drag,.addp,.lcopy{box-sizing:border-box;padding-left:0;padding-right:0}
+.blu{min-width:0}
 .blu{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px 12px}
 .blu h3{font-family:var(--display);font-weight:800;font-size:1.4rem;margin:0 0 8px}
 .blu .slot.cur input{border-color:var(--field);box-shadow:0 0 0 2px var(--field)}
@@ -318,6 +322,9 @@ html:not([data-mode="bucket"]) .bucket-only{display:none!important}
 
     <h2>Line score</h2>
     <div class="tablewrap lines"><table id="bLines"></table></div>
+
+    <h2>Player points</h2>
+    <div class="tablewrap lines" id="bPlayers"></div>
 
     <details id="bLineDet">
       <summary>Lineups</summary>
@@ -510,7 +517,7 @@ function renderTeams(){
         <label class="sm" for="tn${t}">Team name</label>
         <input type="text" id="tn${t}" data-tname="${t}" maxlength="24" value="${esc(team.name)}">
         <label class="sm">Lineup</label>
-        <div class="slots" data-sort="p" data-st="${t}">${team.players.map((p,i)=>`<div class="slot"><button class="drag" aria-label="Move ${esc(pName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg></button><span>${i+1}</span><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"><button class="rm" data-act="rmp" data-idx="${i}" aria-label="Remove ${esc(pName(t,i))}" ${team.players.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
+        <div class="slots" data-sort="p" data-st="${t}">${team.players.map((p,i)=>`<div class="slot"><button class="drag" aria-label="Move ${esc(pName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg><span>${i+1}</span></button><input type="text" data-player="${i}" maxlength="24" placeholder="Player ${i+1}" value="${esc(p)}" aria-label="${esc(team.name)} player ${i+1}" enterkeyhint="next"><button class="rm" data-act="rmp" data-idx="${i}" aria-label="Remove ${esc(pName(t,i))}" ${team.players.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
         <button class="addp" data-act="addp" ${team.players.length>=MAXP?'disabled':''}>+ Add player</button>
       </div>`;
     } else {
@@ -663,6 +670,8 @@ function focusHandle(kind, t, i){
     row.classList.add("dragging"); list.classList.add("sorting"); document.body.classList.add("lineup-drag");
     d.raf = requestAnimationFrame(tick);
   });
+  document.addEventListener("touchstart", e=>{ if(e.target.closest && e.target.closest(".slots .drag")) e.preventDefault(); }, {passive:false});
+  document.addEventListener("touchmove", e=>{ if(d) e.preventDefault(); }, {passive:false});
   document.addEventListener("pointermove", e=>{ if(!d) return; e.preventDefault(); d.lastY = e.clientY; update(); }, {passive:false});
   document.addEventListener("pointerup", ()=>end(true));
   document.addEventListener("pointercancel", ()=>end(false));
@@ -817,11 +826,12 @@ const BDEF = ["Alpha","Bravo","Charlie","Delta"];
 const BN = ["","1st","2nd","3rd","home"];
 const START_BASES = () => [false,true,false,false];
 const blankLineup = () => Array(NP).fill("");
+const zStat = () => ({p:0, h:0, o:0});
 function bBlank(size, names, n, lineups){
   size = size || 21; n = n || 2;
   names = names || [0,1,2,3].map(t=>(state.teams[t] && state.teams[t].name) || BDEF[t]);
   lineups = lineups ? lineups.map(l=>l.slice()) : [0,1,2,3].map(blankLineup);
-  return {v:1, size, n, names:names.slice(0,4), bat:0, round:0, left:size, outs:0, inning:1, bases:START_BASES(), lines:[[0],[],[],[]], lineups, up:[0,0,0,0]};
+  return {v:1, size, n, names:names.slice(0,4), bat:0, round:0, left:size, outs:0, inning:1, bases:START_BASES(), lines:[[0],[],[],[]], lineups, up:[0,0,0,0], stats:lineups.map(l=>l.map(zStat)), last:null};
 }
 function bLoad(){
   try{
@@ -833,6 +843,9 @@ function bLoad(){
       if(!s.lineups) s.lineups = [];
       while(s.lineups.length<4) s.lineups.push(blankLineup());
       if(!s.up) s.up = [0,0,0,0];
+      if(!s.stats) s.stats = [];
+      s.lineups.forEach((l,t)=>{ s.stats[t] = s.stats[t] || []; while(s.stats[t].length<l.length) s.stats[t].push(zStat()); s.stats[t].length = l.length; });
+      if(s.last===undefined) s.last = null;
       return s;
     }
   }catch(e){}
@@ -856,6 +869,10 @@ const upIdx = t => {
   const i = bs.up[t] % L;
   return usable(t,i) ? i : stepIdx(t, i, 1);
 };
+// Points go to the hitter whose swing caused them. Runners sent further by a tap
+// after the play still count for that hitter (bs.last).
+function credit(t, i, p){ const st = bs.stats[t] && bs.stats[t][i]; if(st) st.p += p; }
+const ptLabel = n => `${n} pt${n===1?'':'s'}`;
 function bAdvance(){ bs.up[bs.bat] = stepIdx(bs.bat, upIdx(bs.bat), 1); }
 const bIdx = () => Array.from({length:bs.n},(_,t)=>t);
 const bNext = () => (bs.bat+1) % bs.n;
@@ -890,7 +907,7 @@ async function bSwitch(){
   bSnap();
   bs.bat = bNext(); if(bs.bat===0) bs.round++;
   bs.lines[bs.bat][bs.round] = bs.lines[bs.bat][bs.round] || 0;
-  bs.left = bs.size; bs.outs = 0; bs.inning = 1; bs.bases = START_BASES(); bSel = 0;
+  bs.left = bs.size; bs.outs = 0; bs.inning = 1; bs.bases = START_BASES(); bSel = 0; bs.last = null;
   bSave(); renderBucket(); renderUndo(); toast(`${bName(bs.bat)} up with a full bucket`);
 }
 
@@ -922,7 +939,7 @@ function renderBucket(){
       const i = upIdx(bs.bat), nx = stepIdx(bs.bat, i, 1);
       return `<div class="nowbat">
         <button class="nb" data-b="bprev" aria-label="Back to previous hitter">‹</button>
-        <div class="nbt" aria-live="polite"><small>Now batting</small><b>${i+1}. ${esc(hName(bs.bat,i))}</b><small>On deck: ${esc(hName(bs.bat,nx))}</small></div>
+        <div class="nbt" aria-live="polite"><small>Now batting, ${ptLabel(bs.stats[bs.bat][i] ? bs.stats[bs.bat][i].p : 0)} so far</small><b>${i+1}. ${esc(hName(bs.bat,i))}</b><small>On deck: ${esc(hName(bs.bat,nx))}</small></div>
         <button class="nb" data-b="bnext" aria-label="Skip to next hitter">›</button></div>`;
     })() : ''}
     <div class="bdots" aria-hidden="true">${dots}</div>`;
@@ -961,12 +978,29 @@ function renderBucket(){
   });
   document.getElementById("bLines").innerHTML = h + "</tbody>";
 
+  const plist = [];
+  bIdx().forEach(t=>bs.lineups[t].forEach((nm,i)=>{
+    const st = bs.stats[t][i] || zStat();
+    if((nm||"").trim() || st.p || st.h || st.o) plist.push({t, i, ...st});
+  }));
+  const pw = document.getElementById("bPlayers");
+  if(!plist.length){
+    pw.innerHTML = `<p class="empty">Enter lineups and every hitter's points will show here.</p>`;
+  } else {
+    plist.sort((x,y)=> y.p-x.p || y.h-x.h || x.t-y.t || x.i-y.i);
+    const top = plist[0].p;
+    pw.innerHTML = `<table><thead><tr><th>Hitter</th><th class="tm">Team</th><th>Hits</th><th>Outs</th><th>Pts</th></tr></thead><tbody>${
+      plist.map((x,k)=>`<tr class="${top && x.p===top ? 'leader' : ''}"><td><span class="rank">${k+1}</span>${esc(hName(x.t,x.i))}</td><td class="tm">${esc(bName(x.t))}</td><td>${x.h}</td><td>${x.o}</td><td class="tot">${x.p}</td></tr>`).join("")
+    }</tbody></table>`;
+  }
+
   document.getElementById("bRules").innerHTML = `
     <li>Each team hits from a bucket of ${bs.size} balls. When the bucket's empty, switch sides.</li>
     <li>Any ball swung at is gone: in play, foul, or swing and miss. Takes don't cost a ball.</li>
     <li>Every inning starts with a runner on 1st. Three outs clears the bases and puts a new runner on 1st; the bucket keeps going.</li>
     <li>+2 when a runner reaches 3rd, +1 when he crosses home. Scoring from 1st or 2nd is worth +3.</li>
     <li>An out or a hit sends up the next hitter in the lineup. Misses and fouls keep the same hitter.</li>
+    <li>Player points: a hitter gets every point scored on his swing, including runners you send further by tapping after the play.</li>
     <li>Hits move runners only as far as they're forced. Tap a runner on the diamond to send him further or mark him out.</li>`;
 
   document.getElementById("bsSize").textContent = bs.size;
@@ -987,10 +1021,18 @@ document.getElementById("bucketView").addEventListener("click",e=>{
     bSnap(); bs.left--; bSel = 0;
     if(a==="miss") msg = "Swing and miss";
     else if(a==="foul") msg = "Foul ball";
-    else if(a==="out") msg = bOut() ? "3 outs. New runner on 1st" : "Out in play";
     else {
-      const n = +a[1], g = bHit(n);
-      msg = ["","Single","Double","Triple","Home run"][n] + (g ? `, +${g}` : "");
+      const hi = upIdx(bs.bat), who = hName(bs.bat, hi), st = bs.stats[bs.bat][hi];
+      bs.last = {t:bs.bat, i:hi};
+      if(a==="out"){
+        if(st) st.o++;
+        msg = bOut() ? "3 outs. New runner on 1st" : "Out in play";
+      } else {
+        const n = +a[1], g = bHit(n);
+        if(st) st.h++;
+        credit(bs.bat, hi, g);
+        msg = ["","Single","Double","Triple","Home run"][n] + (g ? `, +${g} for ${who}` : "");
+      }
     }
     if(a==="out" || a[0]==="h"){
       bAdvance();
@@ -1002,8 +1044,11 @@ document.getElementById("bucketView").addEventListener("click",e=>{
     if(!from || !bs.bases[from]) return;
     bSnap();
     const p = bPts(from,to); bAdd(p);
+    const w = bs.last || {t:bs.bat, i:upIdx(bs.bat)};
+    credit(w.t, w.i, p);
     bs.bases[from] = false; if(to<4) bs.bases[to] = true; bSel = 0;
-    msg = to===4 ? `Run scores, +${p}` : `Runner to ${BN[to]}${p?`, +${p}`:''}`;
+    const tag = p ? `, +${p} for ${hName(w.t, w.i)}` : "";
+    msg = to===4 ? `Run scores${tag}` : `Runner to ${BN[to]}${tag}`;
   } else if(a==="rout"){
     const from = bSel; if(!from) return;
     bSnap(); bs.bases[from] = false; bSel = 0;
@@ -1023,7 +1068,7 @@ function renderLineups(){
     const lu = bs.lineups[t], cur = upIdx(t);
     const src = (state.teams[t] ? state.teams[t].players : []).filter(p=>(p||"").trim());
     return `<div class="blu"><h3>${esc(bName(t))}</h3>
-      <div class="slots" data-sort="b" data-st="${t}">${lu.map((p,i)=>`<div class="slot${i===cur?' cur':''}"><button class="drag" aria-label="Move ${esc(hName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg></button><span>${i+1}</span>
+      <div class="slots" data-sort="b" data-st="${t}">${lu.map((p,i)=>`<div class="slot${i===cur?' cur':''}"><button class="drag" aria-label="Move ${esc(hName(t,i))}. Drag, or use the up and down arrow keys"><svg viewBox="0 0 12 20" width="12" height="20" aria-hidden="true"><g fill="currentColor"><circle cx="3" cy="4" r="1.7"/><circle cx="9" cy="4" r="1.7"/><circle cx="3" cy="10" r="1.7"/><circle cx="9" cy="10" r="1.7"/><circle cx="3" cy="16" r="1.7"/><circle cx="9" cy="16" r="1.7"/></g></svg><span>${i+1}</span></button>
         <input type="text" data-lt="${t}" data-li="${i}" maxlength="24" placeholder="Hitter ${i+1}" value="${esc(p)}" aria-label="${esc(bName(t))} hitter ${i+1}${i===cur?', batting next':''}" enterkeyhint="next">
         <button class="rm" data-lact="rm" data-lt="${t}" data-li="${i}" aria-label="Remove ${esc(hName(t,i))}" ${lu.length<=1?'disabled':''}>×</button></div>`).join("")}</div>
       <button class="addp" data-lact="add" data-lt="${t}" ${lu.length>=MAXP?'disabled':''}>+ Add hitter</button>
@@ -1036,19 +1081,22 @@ document.getElementById("bLineups").addEventListener("click",async e=>{
   const t = +b.dataset.lt, lu = bs.lineups[t];
   if(b.dataset.lact==="add"){
     if(lu.length>=MAXP) return;
-    bSnap(); lu.push("");
+    bSnap(); lu.push(""); bs.stats[t].push(zStat());
     bSave(); renderLineups(); renderBucket(); renderUndo();
     const inp = document.querySelector(`[data-lt="${t}"][data-li="${lu.length-1}"]`); if(inp) inp.focus();
   } else if(b.dataset.lact==="rm"){
     if(lu.length<=1) return;
-    const i = +b.dataset.li, cur = upIdx(t);
-    bSnap(); lu.splice(i,1);
+    const i = +b.dataset.li, cur = upIdx(t), st = bs.stats[t][i];
+    if(st && (st.p||st.h||st.o) && !(await ask(`Remove ${hName(t,i)}? Their ${ptLabel(st.p)} stay in ${bName(t)}'s team total but leave the player list.`, "Remove"))) return;
+    bSnap(); lu.splice(i,1); bs.stats[t].splice(i,1);
+    if(bs.last && bs.last.t===t) bs.last = bs.last.i===i ? null : { t, i: bs.last.i>i ? bs.last.i-1 : bs.last.i };
     bs.up[t] = i<cur ? cur-1 : (cur>=lu.length ? 0 : cur);
     bSave(); renderLineups(); renderBucket(); renderUndo(); toast("Hitter removed. Undo brings them back.");
   } else if(b.dataset.lact==="copy"){
     const src = state.teams[t].players.filter(p=>(p||"").trim());
     if(lu.some(p=>p.trim()) && !(await ask(`Replace ${bName(t)}'s Bucket Ball lineup with the Point Game lineup?`, "Replace"))) return;
     bSnap(); bs.lineups[t] = src.slice(0, MAXP); bs.up[t] = 0;
+    bs.stats[t] = bs.lineups[t].map(zStat); if(bs.last && bs.last.t===t) bs.last = null;
     bSave(); renderLineups(); renderBucket(); renderUndo(); toast(`${bName(t)} lineup copied`);
   }
 });
@@ -1076,6 +1124,8 @@ sorters.b = (t, from, to)=>{
   bSnap();
   const cur = upIdx(t);
   moveItem(bs.lineups[t], from, to);
+  moveItem(bs.stats[t], from, to);
+  if(bs.last && bs.last.t===t) bs.last.i = movedIndex(bs.last.i, from, to);
   bs.up[t] = movedIndex(cur, from, to);
   bSave(); renderLineups(); renderBucket(); renderUndo();
   toast(`${hName(t,to)} now bats ${to+1}${ordSuffix(to+1)}`);
@@ -1106,7 +1156,7 @@ document.getElementById("bCount").addEventListener("change",e=>{
   bSave(); renderBucket(); renderLineups(); renderUndo(); toast(`${n} teams. Undo switches back.`);
 });
 document.getElementById("bReset").addEventListener("click",async ()=>{
-  if(!(await ask("Clear the Bucket Ball score and start over? Team names, lineups, number of teams and bucket size stay.", "Start over"))) return;
+  if(!(await ask("Clear the Bucket Ball score and player points and start over? Team names, lineups, number of teams and bucket size stay.", "Start over"))) return;
   bSnap(); bs = bBlank(bs.size, bs.names, bs.n, bs.lineups); bSel = 0;
   bSave(); renderBucket(); renderLineups(); renderUndo(); toast("New Bucket Ball game. Undo brings it back.");
 });
